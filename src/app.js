@@ -36,7 +36,7 @@ const balance = () => balanceOf(myBets());
 const sameSlot = (a, b) => a.market === b.market && (a.market === 'champion' || a.matchId === b.matchId);
 
 // ---------- vistas ----------
-const views = { matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors };
+const views = { matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors, help: renderHelp };
 let tab = 'matches';
 let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 const rank = ranking(data.players, data.matches);
@@ -59,12 +59,12 @@ const GOOGLE_G = `<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="t
 
 function render() {
   renderAccount();
-  $('#bettors-tab').hidden = !shared;
   $('#balance').textContent = shared && !store.user ? '—' : fmt(balance());
   const open = myBets().filter(b => settle(b, data.matches, champion) === 'open').length;
   $('#open-count').hidden = !open;
   $('#open-count').textContent = open;
   document.querySelectorAll('[role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
+  document.querySelector('[role=tab][aria-selected=true]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   $('#view').innerHTML = views[tab]();
   if (tab === 'ranking') { $('#h2h-b').selectedIndex = 1; updateH2H(); }
 }
@@ -146,24 +146,139 @@ function renderBets() {
 const loginPrompt = msg => `<section class="empty"><h2>Entrá para jugar</h2><p class="muted">${msg}</p>
   <button class="google" id="login">${GOOGLE_G} Entrar con Google</button></section>`;
 
-// Tabla de apostadores: saldo actual = 1.000 − apostado + cobrado.
-function renderBettors() {
-  if (!store.user) return loginPrompt('Entrá con tu cuenta de Google para ver el ranking de apostadores.');
+// Ranking de fichas. "Ganancia" sólo cuenta apuestas ya resueltas: lo que está en juego todavía no se perdió.
+function bettorRows() {
   const byUser = {};
   for (const b of store.bets) (byUser[b.uid] ??= []).push(b);
-  const rows = Object.values(store.users).map(u => {
+  return Object.values(store.users).map(u => {
     const bets = byUser[u.uid] ?? [];
     const st = bets.map(b => settle(b, data.matches, champion));
-    return { ...u, balance: balanceOf(bets), total: bets.length, won: st.filter(s => s === 'won').length, open: st.filter(s => s === 'open').length };
-  }).sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name));
-  return `<section><h2>Apostadores</h2>
-    <p class="muted">Todos arrancan con ${fmt(START_BALANCE)} fichas. El saldo cuenta lo apostado y lo cobrado.</p>
+    const inPlay = bets.filter((b, i) => st[i] === 'open').reduce((a, b) => a + b.stake, 0);
+    const available = balanceOf(bets);
+    const won = st.filter(x => x === 'won').length;
+    const decided = st.filter(x => x !== 'open').length;
+    return { ...u, available, inPlay, total: available + inPlay, profit: available + inPlay - START_BALANCE, bets: bets.length, won, decided };
+  }).sort((a, b) => b.total - a.total || b.won - a.won || a.name.localeCompare(b.name));
+}
+
+const signed = n => (n > 0.5 ? `+${fmt(n)}` : fmt(n));
+const userPic = (u, cls = '') => u.photo
+  ? `<img class="${cls}" src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">`
+  : `<span class="${cls} nopic" aria-hidden="true">${esc((u.name || '?')[0].toUpperCase())}</span>`;
+
+function renderBettors() {
+  if (shared && !store.user) return loginPrompt('Entrá con tu cuenta de Google para ver quién va ganando con las fichas.');
+  const rows = bettorRows();
+  const me = store.user?.uid;
+  if (!rows.some(r => r.bets)) return `<section class="empty"><h2>Ranking de fichas</h2>
+    <p class="muted">Todavía nadie apostó. ¡Estrenalo! Elegí una cuota en Partidos.</p></section>`;
+  const medals = ['🥇', '🥈', '🥉'];
+  const podium = rows.slice(0, 3).map((r, i) => `<div class="podium-spot p${i + 1}${r.uid === me ? ' me' : ''}">
+      <span class="medal">${medals[i]}</span>${userPic(r, 'pic')}
+      <strong class="pname">${esc(r.name)}</strong>
+      <span class="ptotal">${fmt(r.total)}</span>
+      <span class="${r.profit > 0.5 ? 'up' : r.profit < -0.5 ? 'down' : 'muted'}">${signed(r.profit)}</span></div>`).join('');
+  return `<section><h2>Ranking de fichas</h2>
+    <p class="muted">Todos arrancan con ${fmt(START_BALANCE)}. Se ordena por fichas totales: las disponibles más las que están en juego en apuestas pendientes.</p>
+    <div class="podium">${podium}</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Apostador</th><th>Apuestas</th><th>Ganadas</th><th>Pendientes</th><th>Fichas</th></tr></thead>
-      <tbody>${rows.map((r, i) => `<tr class="${r.uid === store.user.uid ? 'me' : ''}"><td>${i + 1}</td>
-        <td class="bettor">${r.photo ? `<img src="${esc(r.photo)}" alt="" referrerpolicy="no-referrer">` : ''}${esc(r.name)}</td>
-        <td>${r.total}</td><td>${r.won}</td><td>${r.open}</td><td><strong>${fmt(r.balance)}</strong></td></tr>`).join('')}
+      <thead><tr><th>#</th><th>Apostador</th><th>Total</th><th title="Ganancia o pérdida de apuestas ya resueltas">±</th><th>Disponibles</th><th>En juego</th><th>Aciertos</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr class="${r.uid === me ? 'me' : ''}"><td>${i + 1}</td>
+        <td class="bettor">${userPic(r)}${esc(r.name)}</td>
+        <td><strong>${fmt(r.total)}</strong></td>
+        <td class="${r.profit > 0.5 ? 'up' : r.profit < -0.5 ? 'down' : ''}">${signed(r.profit)}</td>
+        <td>${fmt(r.available)}</td><td>${fmt(r.inPlay)}</td>
+        <td>${r.decided ? `${r.won}/${r.decided}` : '—'}</td></tr>`).join('')}
       </tbody></table></div></section>`;
+}
+
+// Página explicativa. Los ejemplos usan las fórmulas reales del modelo para no desactualizarse.
+function renderHelp() {
+  const eloDelta = (ra, rb, dominance) => 48 * dominance * (1 - winProb(ra, rb));
+  const even = matchMarkets({ p1: 'a', p2: 'b' }, { a: 1500, b: 1500 });
+  const fav = matchMarkets({ p1: 'a', p2: 'b' }, { a: 1580, b: 1460 });
+  const example = data.matches.find(m => !m.result);
+  const exMk = example && matchMarkets(example, ratings);
+  const exName = n => esc(n.split(' ').slice(-1)[0]);
+  return `<article class="help">
+  <nav class="toc">
+    <a href="#h-fichas">Fichas</a><a href="#h-cuotas">Cuotas</a><a href="#h-exacto">Resultado exacto</a>
+    <a href="#h-reglas">Reglas</a><a href="#h-elo">Ranking Elo</a><a href="#h-campeon">Campeón</a><a href="#h-faq">Preguntas</a>
+  </nav>
+
+  <section id="h-fichas"><h2>🪙 Las fichas</h2>
+    <p>Cada uno arranca con <strong>${fmt(START_BALANCE)} fichas</strong>. No son plata real ni se compran: es sólo para jugar y ver quién la pega más.
+    Si te quedás sin fichas, no podés apostar más hasta cobrar alguna apuesta pendiente.</p>
+    <p>En <a href="#fichas">Ranking de fichas</a> se ve quién va ganando.</p></section>
+
+  <section id="h-cuotas"><h2>📈 Cómo leer una cuota</h2>
+    <p>La cuota es <strong>cuánto cobrás por cada ficha apostada</strong> si acertás (incluye lo que apostaste).</p>
+    <div class="callout">Apostás <strong>100</strong> a cuota <strong>${even.winner.p1.odds.toFixed(2)}</strong> → si acertás cobrás <strong>${fmt(100 * even.winner.p1.odds)}</strong>
+      (ganás ${fmt(100 * even.winner.p1.odds - 100)}). Si no, perdés las 100.</div>
+    <p>Cuota baja = favorito (más probable, paga poco). Cuota alta = punto (menos probable, paga mucho).
+    Con dos jugadores parejos ambos pagan ${even.winner.p1.odds.toFixed(2)}; si uno viene mejor, por ejemplo
+    ${fav.winner.p1.odds.toFixed(2)} contra ${fav.winner.p2.odds.toFixed(2)}.</p>
+    ${example ? `<p class="muted">Ejemplo real: en <em>${esc(example.p1)} vs ${esc(example.p2)}</em> hoy pagan
+      ${exMk.winner.p1.odds.toFixed(2)} y ${exMk.winner.p2.odds.toFixed(2)}.</p>` : ''}
+    <p>La cuota sale de la probabilidad del modelo: <code>cuota = 1 / (probabilidad × 1,06)</code>.
+    Ese 6% es el margen de la "casa", para que apostar a todo no sea negocio.</p>
+    <p><strong>La cuota queda fija</strong> en el momento en que apostás, aunque después cambie.</p></section>
+
+  <section id="h-exacto"><h2>🎯 Resultado exacto</h2>
+    <p>Se apuesta a cómo termina el partido en sets, <strong>siempre contando primero al jugador de arriba</strong> en la tarjeta:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Botón</th><th>Significa</th><th>Cuota con jugadores parejos</th></tr></thead>
+      <tbody>
+        <tr><td><strong>2-0</strong></td><td>Gana el de arriba en 2 sets</td><td>${even.score['2-0'].odds.toFixed(2)}</td></tr>
+        <tr><td><strong>2-1</strong></td><td>Gana el de arriba en 3 (super tie-break)</td><td>${even.score['2-1'].odds.toFixed(2)}</td></tr>
+        <tr><td><strong>1-2</strong></td><td>Gana el de abajo en 3 (super tie-break)</td><td>${even.score['1-2'].odds.toFixed(2)}</td></tr>
+        <tr><td><strong>0-2</strong></td><td>Gana el de abajo en 2 sets</td><td>${even.score['0-2'].odds.toFixed(2)}</td></tr>
+      </tbody></table></div>
+    <p>Es más difícil de acertar que el ganador, por eso paga más.</p></section>
+
+  <section id="h-reglas"><h2>📋 Reglas de las apuestas</h2>
+    <ul>
+      <li><strong>Una apuesta por partido a ganador</strong> y <strong>una a resultado exacto</strong>. Se pueden hacer las dos.</li>
+      <li><strong>Una sola apuesta a campeón</strong> en todo el torneo.</li>
+      <li>Una vez hecha, <strong>no se puede cambiar ni cancelar</strong>.</li>
+      <li>Se puede apostar hasta que se carga el resultado en la planilla.</li>
+      <li>Las apuestas se cobran solas cuando Matías carga el resultado (el sitio se actualiza cada 2 horas).</li>
+      <li>Si ganás las dos apuestas de un partido, cobrás las dos.</li>
+      <li>Todos los que entraron ven las apuestas de todos: en cada partido aparece cuántas hay (👥).</li>
+    </ul></section>
+
+  <section id="h-elo"><h2>📊 El ranking Elo</h2>
+    <p>Es el mismo sistema que se usa en ajedrez. Sirve para estimar quién es favorito en cada partido.</p>
+    <ul>
+      <li>Todos arrancan con <strong>1500 puntos</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
+      <li>En cada partido el ganador <strong>le saca puntos al perdedor</strong>.</li>
+      <li>Cuanto <strong>más inesperado</strong> el resultado, más puntos se mueven. Ganarle al favorito vale mucho; ganarle al último, poco.</li>
+      <li>Ganar <strong>2-0</strong> mueve más que ganar <strong>2-1</strong>.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Partido</th><th>Ganando 2-0</th><th>Ganando 2-1</th></tr></thead>
+      <tbody>
+        <tr><td>Parejos (1500 vs 1500)</td><td>±${fmt(eloDelta(1500, 1500, 1.25))}</td><td>±${fmt(eloDelta(1500, 1500, 0.85))}</td></tr>
+        <tr><td>El favorito gana (1560 vs 1440)</td><td>±${fmt(eloDelta(1560, 1440, 1.25))}</td><td>±${fmt(eloDelta(1560, 1440, 0.85))}</td></tr>
+        <tr><td>Sorpresa: gana el de 1440 contra 1560</td><td>±${fmt(eloDelta(1440, 1560, 1.25))}</td><td>±${fmt(eloDelta(1440, 1560, 0.85))}</td></tr>
+      </tbody></table></div>
+    <p>La probabilidad de que A le gane a B es <code>1 / (1 + 10<sup>(B − A) / 400</sup>)</code>. Por ejemplo, 100 puntos de diferencia ≈ ${pct(winProb(1600, 1500))} para el de arriba.</p>
+    <p class="muted">El Elo es independiente de la tabla del torneo: la tabla usa los puntos del reglamento (2 al ganador, 1 al perdedor que gana un set). Ver <a href="#" data-goto="ranking">Ranking</a>.</p></section>
+
+  <section id="h-campeon"><h2>🏆 Cuotas a campeón</h2>
+    <p>El sitio <strong>simula 4.000 veces</strong> el resto del torneo: los partidos de zona que faltan y después cuartos, semis y final,
+    con el cuadro del reglamento (1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A, 2°A vs 3°B).
+    Si alguien sale campeón en 400 de las 4.000 simulaciones, tiene 10% y su cuota es ${toOdds(0.1).toFixed(2)}.</p>
+    <p>Lo mismo da el "% Clasifica" de la <a href="#" data-goto="table">Tabla</a>.</p></section>
+
+  <section id="h-faq"><h2>❓ Preguntas</h2>
+    <details><summary>¿Quién paga lo que gano?</summary><p>Nadie: las fichas que cobrás las crea el sitio y las que perdés desaparecen. No hay plata de nadie en juego.</p></details>
+    <details><summary>¿Puedo apostar a los dos jugadores para no perder?</summary><p>Al ganador no: una apuesta por partido. Podés combinar ganador y resultado exacto, pero por el margen de la casa a la larga cubrirte hace perder fichas.</p></details>
+    <details><summary>¿Por qué cambian las cuotas?</summary><p>Porque con cada resultado se actualiza el Elo. Tu apuesta mantiene la cuota del momento en que la hiciste.</p></details>
+    <details><summary>¿Se ve mi mail?</summary><p>No. Los demás sólo ven tu nombre y tu foto de Google.</p></details>
+    <details><summary>¿Puedo apostar a mi propio partido?</summary><p>Sí, y también en contra 😅. Queda a la vista de todos.</p></details>
+  </section>
+  </article>`;
 }
 
 function renderRanking() {
@@ -231,10 +346,16 @@ function renderPlayer(p) {
 }
 
 // Navegación por hash para poder compartir el link de un jugador.
+const HASH_TABS = { jugadores: 'players', fichas: 'bettors', 'como-funciona': 'help' };
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
+  if (h.startsWith('h-')) { // ancla dentro de "Cómo funciona"
+    if (tab !== 'help') { tab = 'help'; render(); }
+    document.getElementById(h)?.scrollIntoView({ behavior: 'smooth' });
+    return;
+  }
   if (h.startsWith('jugador/')) { tab = 'players'; selectedPlayer = h.slice(8); }
-  else if (h === 'jugadores') { tab = 'players'; selectedPlayer = null; }
+  else if (HASH_TABS[h]) { tab = HASH_TABS[h]; selectedPlayer = null; }
   render();
   window.scrollTo(0, 0);
 }
@@ -278,9 +399,11 @@ $('#slip').addEventListener('close', async () => {
 store.onChange(render);
 
 document.addEventListener('click', e => {
-  const tabBtn = e.target.closest('[role=tab]');
+  const goto = e.target.closest('[data-goto]');
+  const tabBtn = e.target.closest('[role=tab]') ?? goto;
   if (tabBtn) {
-    tab = tabBtn.dataset.tab;
+    e.preventDefault();
+    tab = tabBtn.dataset.tab ?? goto.dataset.goto;
     selectedPlayer = null;
     if (location.hash) history.replaceState(null, '', location.pathname);
     render();

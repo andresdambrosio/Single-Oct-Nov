@@ -154,6 +154,33 @@ dialog input { font: inherit; font-size: 1.2rem; padding: 10px; border-radius: 1
 .bettor { display: flex; align-items: center; gap: 8px; }
 tr.me td { background: var(--surface-2); }
 
+.nopic { width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--court); color: #fff; font-weight: 700; font-size: .8rem; flex: none; }
+.podium { display: flex; justify-content: center; gap: 10px; align-items: flex-end; margin-bottom: 16px; }
+.podium-spot { display: grid; justify-items: center; gap: 4px; text-align: center; background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px 8px; min-width: 0; flex: 1; max-width: 220px; }
+.podium-spot.p1 { order: 2; padding-top: 24px; border-color: var(--accent); }
+.podium-spot.p2 { order: 1; }
+.podium-spot.p3 { order: 3; }
+.podium-spot.me { background: var(--surface-2); }
+.podium-spot .medal { font-size: 1.6rem; line-height: 1; }
+.podium-spot .pic, .podium-spot .nopic.pic { width: 52px; height: 52px; border-radius: 50%; font-size: 1.2rem; }
+.pname { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ptotal { font-size: 1.3rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.help { max-width: 760px; }
+.help section { scroll-margin-top: 16px; }
+.help p, .help li { line-height: 1.6; }
+.help ul { padding-left: 20px; }
+.help code { background: var(--surface-2); padding: 1px 6px; border-radius: 6px; font-size: .9em; }
+.help details { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; }
+.help details summary { color: var(--text); font-weight: 600; font-size: .95rem; }
+.help details p { margin: 8px 0 0; }
+.help .table-wrap { margin: 8px 0; }
+.callout { background: var(--surface); border-left: 4px solid var(--accent); border-radius: 10px; padding: 12px 14px; margin: 8px 0; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.toc a { background: var(--surface); border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: .85rem; text-decoration: none; color: var(--text); }
+.toc a:hover { border-color: var(--accent); }
+
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 
 @media (max-width: 560px) {

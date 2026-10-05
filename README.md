@@ -14,7 +14,8 @@ Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata
 - **Jugadores**: foto, descripción y partidos de cada jugador (`#jugador/<id>`).
 - **Campeón**: cuotas para ganar el torneo, a partir de simular el resto de la fase de grupos y el playoff.
 - **Mis apuestas**: boleta, saldo y liquidación automática cuando se carga el resultado.
-- **Apostadores** (con Firebase): login con Google y ranking de todos los que apuestan.
+- **Ranking de fichas** (`#fichas`): podio y tabla de quién va ganando, con fichas disponibles, en juego y aciertos.
+- **Cómo funciona** (`#como-funciona`): explica fichas, cuotas, resultado exacto, reglas, Elo y cuotas a campeón.
 
 ## Modelo de probabilidades
 
