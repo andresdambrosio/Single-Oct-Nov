@@ -25,7 +25,7 @@ Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata
 - P(A gana) = 1 / (1 + 10^((R_B − R_A)/400)).
 - Para el resultado exacto se busca la probabilidad de ganar un set `s` tal que s²(3 − 2s) = P(A gana).
 - Cuota = 1 / (p × 1,06), con un mínimo de 1,05.
-- Campeón: 4.000 simulaciones Monte Carlo con semilla fija, usando el cuadro de la hoja "Modalidad"
+- Campeón: 20.000 simulaciones Monte Carlo con semilla fija, usando el cuadro de la hoja "Modalidad"
   (1A–4B, 2B–3A, 1B–4A, 2A–3B).
 
 Todo está en [`src/model.js`](src/model.js).

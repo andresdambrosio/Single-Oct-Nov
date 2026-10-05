@@ -15,7 +15,8 @@ const ratings = computeRatings(data.players, data.matches);
 // Semilla fija: las cuotas de campeón no cambian al recargar, sólo cuando entra un resultado.
 let seed = 20261004;
 const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-const sim = simulateTournament(data.players, data.matches, ratings, 4000, rng);
+const SIM_RUNS = 20000;
+const sim = simulateTournament(data.players, data.matches, ratings, SIM_RUNS, rng);
 const champion = null; // TODO: se completa cuando el playoff esté cargado en la planilla
 
 // ---------- apuestas ----------
@@ -123,7 +124,7 @@ function renderOutright() {
     .map(p => ({ ...p, p: sim[p.name].champion }))
     .sort((a, b) => b.p - a.p);
   return `<section><h2>¿Quién sale campeón?</h2>
-    <p class="muted">Probabilidades de ${fmt(4000)} simulaciones del resto del torneo según el rendimiento hasta ahora.</p>
+    <p class="muted">Probabilidades de ${fmt(SIM_RUNS)} simulaciones del resto del torneo según el rendimiento hasta ahora.</p>
     <div class="outright">${list.map(p => {
       const bet = { market: 'champion', pick: p.name, odds: toOdds(Math.max(p.p, 0.005)), key: `champion:${p.id}`, title: 'Campeón del torneo', desc: `${p.name} campeón` };
       return `<div class="out-row"><span class="zone z${p.zone}">${p.zone}</span><span class="name">${playerLink(p.name)}</span><span class="muted">${pct(p.p)}</span>${oddsButton(bet, 'Apostar')}</div>`;
@@ -266,9 +267,9 @@ function renderHelp() {
     <p class="muted">El Elo es independiente de la tabla del torneo: la tabla usa los puntos del reglamento (2 al ganador, 1 al perdedor que gana un set). Ver <a href="#" data-goto="ranking">Ranking</a>.</p></section>
 
   <section id="h-campeon"><h2>🏆 Cuotas a campeón</h2>
-    <p>El sitio <strong>simula 4.000 veces</strong> el resto del torneo: los partidos de zona que faltan y después cuartos, semis y final,
+    <p>El sitio <strong>simula ${fmt(SIM_RUNS)} veces</strong> el resto del torneo: los partidos de zona que faltan y después cuartos, semis y final,
     con el cuadro del reglamento (1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A, 2°A vs 3°B).
-    Si alguien sale campeón en 400 de las 4.000 simulaciones, tiene 10% y su cuota es ${toOdds(0.1).toFixed(2)}.</p>
+    Si alguien sale campeón en ${fmt(SIM_RUNS / 10)} de las ${fmt(SIM_RUNS)} simulaciones, tiene 10% y su cuota es ${toOdds(0.1).toFixed(2)}.</p>
     <p>Lo mismo da el "% Clasifica" de la <a href="#" data-goto="table">Tabla</a>.</p></section>
 
   <section id="h-faq"><h2>❓ Preguntas</h2>

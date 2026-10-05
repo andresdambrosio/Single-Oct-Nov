@@ -73,9 +73,10 @@ export function matchMarkets(match, ratings) {
   };
 }
 
-// Tabla de una zona. Desempate según reglamento: puntos y luego partido entre ambos;
-// después diferencia de sets como criterio extra.
-export function standings(players, matches, zone) {
+// Tabla de una zona. Desempate según reglamento: puntos y luego partido entre ambos.
+// Si empatan 3 o más, se arma una mini-tabla con los partidos entre ellos. Después, diferencia
+// de sets y por último `tiebreak` (alfabético en la web; al azar en las simulaciones).
+export function standings(players, matches, zone, tiebreak = (a, b) => a.name.localeCompare(b.name)) {
   const rows = Object.fromEntries(
     players.filter(p => p.zone === zone).map(p => [p.name, { name: p.name, played: 0, won: 0, setsWon: 0, setsLost: 0, points: 0 }]),
   );
@@ -88,15 +89,22 @@ export function standings(players, matches, zone) {
     a.points += res.pointsP1; b.points += res.pointsP2;
     (res.winner === 1 ? a : b).won++;
   }
-  const h2h = (x, y) => {
-    const m = zoneMatches.find(m => (m.p1 === x && m.p2 === y) || (m.p1 === y && m.p2 === x));
-    if (!m) return 0;
-    const winner = m.result.winner === 1 ? m.p1 : m.p2;
-    return winner === x ? -1 : 1;
-  };
-  return Object.values(rows).sort(
-    (x, y) => y.points - x.points || h2h(x.name, y.name) || (y.setsWon - y.setsLost) - (x.setsWon - x.setsLost) || x.name.localeCompare(y.name),
-  );
+  // Agrupa por puntos y ordena cada grupo empatado por sus partidos entre sí.
+  const groups = {};
+  for (const r of Object.values(rows)) (groups[r.points] ??= []).push(r);
+  return Object.keys(groups).map(Number).sort((a, b) => b - a).flatMap(pts => {
+    const tied = groups[pts];
+    if (tied.length === 1) return tied;
+    const names = new Set(tied.map(r => r.name));
+    const mini = Object.fromEntries(tied.map(r => [r.name, 0]));
+    for (const m of zoneMatches) {
+      if (names.has(m.p1) && names.has(m.p2)) {
+        mini[m.p1] += m.result.pointsP1;
+        mini[m.p2] += m.result.pointsP2;
+      }
+    }
+    return tied.sort((x, y) => mini[y.name] - mini[x.name] || (y.setsWon - y.setsLost) - (x.setsWon - x.setsLost) || tiebreak(x, y));
+  });
 }
 
 // Simulación Monte Carlo del resto de la fase de grupos + playoff.
@@ -116,7 +124,9 @@ export function simulateTournament(players, matches, ratings, runs = 4000, rng =
       return { ...m, result: { winner, setsP1: w1, setsP2: w2, pointsP1: winner === 1 ? 2 : Math.min(w1, 1), pointsP2: winner === 2 ? 2 : Math.min(w2, 1) } };
     });
     const all = [...played, ...simulated];
-    const seed = { A: standings(players, all, 'A'), B: standings(players, all, 'B') };
+    const coin = Object.fromEntries(players.map(p => [p.name, rng()]));
+    const random = (x, y) => coin[x.name] - coin[y.name];
+    const seed = { A: standings(players, all, 'A', random), B: standings(players, all, 'B', random) };
     for (const z of ['A', 'B']) seed[z].slice(0, 4).forEach(r => out[r.name].qualify++);
     const winners = {};
     for (const round of PLAYOFF) {

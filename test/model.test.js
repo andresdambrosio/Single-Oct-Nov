@@ -81,3 +81,13 @@ test('ranking: sin partidos todos arrancan iguales (50%)', async () => {
   const r = ranking(data.players, data.matches.map(m => ({ ...m, result: null })));
   assert.ok(r.every(p => p.rating === 1500 && p.vsAverage === 0.5));
 });
+
+test('sin resultados, todos los de una zona tienen la misma chance de clasificar (sin sesgo de desempate)', () => {
+  let seed = 7;
+  const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const fresh = data.matches.map(m => ({ ...m, result: null }));
+  const r = computeRatings(data.players, fresh);
+  const sim = simulateTournament(data.players, fresh, r, 20000, rng);
+  const expected = 4 / 7;
+  for (const p of data.players) assert.ok(Math.abs(sim[p.name].qualify - expected) < 0.015, `${p.name}: ${sim[p.name].qualify}`);
+});
