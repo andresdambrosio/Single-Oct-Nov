@@ -14,6 +14,7 @@ Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata
 - **Jugadores**: foto, descripción y partidos de cada jugador (`#jugador/<id>`).
 - **Campeón**: cuotas para ganar el torneo, a partir de simular el resto de la fase de grupos y el playoff.
 - **Mis apuestas**: boleta, saldo y liquidación automática cuando se carga el resultado.
+- **Apostadores** (con Firebase): login con Google y ranking de todos los que apuestan.
 
 ## Modelo de probabilidades
 
@@ -47,8 +48,32 @@ npm test
 
 No tiene dependencias. Alcanza con Node 20+ y Python 3, que se usa para servir los archivos estáticos.
 
+## Login con Google y apuestas compartidas (Firebase)
+
+Sin configurar, el sitio anda en **modo local**: cada uno apuesta en su navegador. Con Firebase,
+cada uno entra con su Gmail, las apuestas quedan guardadas para todos y aparece la pestaña **Apostadores**.
+
+Reglas del modo compartido:
+- Una apuesta por partido y por mercado (ganador / resultado exacto) y una sola a campeón.
+- Una vez hecha, una apuesta no se puede cambiar ni borrar.
+- Todos los logueados ven las apuestas de todos. Del perfil de cada uno sólo se comparte el nombre y la foto de Google, no el mail.
+
+Para activarlo (gratis, plan Spark):
+
+1. Entrar a https://console.firebase.google.com y crear un proyecto (ej. `tini-tennis-tour`). Analytics no hace falta.
+2. **Authentication → Comenzar → Google** → habilitar y guardar.
+3. **Authentication → Configuración → Dominios autorizados** → agregar `andresdambrosio.github.io`.
+4. **Firestore Database → Crear base de datos**, en modo producción y en la región `southamerica-east1`.
+5. **Firestore → Reglas** → pegar el contenido de [`firestore.rules`](firestore.rules) y publicar.
+6. **Configuración del proyecto → Tus apps → Web (`</>`)**: registrar la app y copiar el objeto `firebaseConfig`
+   en [`src/firebase-config.js`](src/firebase-config.js).
+7. Commit y push. GitHub Pages lo publica en 1 o 2 minutos.
+
+Para que entren sólo los participantes, en `firestore.rules` está comentada una lista de mails permitidos.
+
+> El saldo se calcula en el navegador, así que alguien que sepa usar la consola podría apostar más
+> de lo que tiene. Para un torneo entre amigos alcanza; si hiciera falta, se blinda con una Cloud Function.
+
 ## Próximos pasos
 
-- Hoy las apuestas se guardan en el navegador de cada uno. Para tener un ranking de apostadores
-  compartido hace falta un backend chico (Supabase o Firebase) con login.
 - Cargar el playoff cuando termine la fase de grupos y liquidar las apuestas a campeón.

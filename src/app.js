@@ -1,6 +1,6 @@
+import { createStore } from './store.js';
 import { computeRatings, matchMarkets, ranking, settle, simulateTournament, standings, toOdds, winProb } from './model.js';
 
-const STORE = 'ttt.wallet.v1';
 const START_BALANCE = 1000;
 const $ = sel => document.querySelector(sel);
 const fmt = n => Math.round(n).toLocaleString('es-AR');
@@ -18,26 +18,25 @@ const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const sim = simulateTournament(data.players, data.matches, ratings, 4000, rng);
 const champion = null; // TODO: se completa cuando el playoff esté cargado en la planilla
 
-// ---------- billetera (localStorage) ----------
-function loadWallet() {
-  try { return JSON.parse(localStorage.getItem(STORE)) ?? { bets: [] }; } catch { return { bets: [] }; }
-}
-function saveWallet(w) {
-  try { localStorage.setItem(STORE, JSON.stringify(w)); } catch { /* modo privado: queda en memoria */ }
-}
-const wallet = loadWallet();
+// ---------- apuestas ----------
+const store = await createStore();
+const shared = store.mode === 'firebase';
+const myBets = () => (store.user ? store.bets.filter(b => b.uid === store.user.uid) : []);
 
-function balance() {
+function balanceOf(bets) {
   let b = START_BALANCE;
-  for (const bet of wallet.bets) {
+  for (const bet of bets) {
     b -= bet.stake;
     if (settle(bet, data.matches, champion) === 'won') b += bet.stake * bet.odds;
   }
   return b;
 }
+const balance = () => balanceOf(myBets());
+// Una apuesta por partido y mercado (y una sola a campeón).
+const sameSlot = (a, b) => a.market === b.market && (a.market === 'champion' || a.matchId === b.matchId);
 
 // ---------- vistas ----------
-const views = { matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets };
+const views = { matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors };
 let tab = 'matches';
 let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 const rank = ranking(data.players, data.matches);
@@ -46,9 +45,23 @@ rank.forEach(r => { r.position = 1 + rank.filter(o => Math.round(o.rating) > Mat
 const byName = Object.fromEntries(rank.map(r => [r.name, r]));
 const playerLink = name => `<a href="#jugador/${byName[name].id}" class="plink">${esc(name)}</a>`;
 
+function renderAccount() {
+  const el = $('#account');
+  if (!shared) { el.hidden = true; return; }
+  el.hidden = false;
+  if (!store.authReady) { el.innerHTML = ''; return; }
+  el.innerHTML = store.user
+    ? `${store.user.photo ? `<img src="${esc(store.user.photo)}" alt="" referrerpolicy="no-referrer">` : ''}
+       <span class="who">${esc(store.user.name)}</span><button class="link" id="logout">Salir</button>`
+    : `<button class="google" id="login">${GOOGLE_G} Entrar con Google</button>`;
+}
+const GOOGLE_G = `<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+
 function render() {
-  $('#balance').textContent = fmt(balance());
-  const open = wallet.bets.filter(b => settle(b, data.matches, champion) === 'open').length;
+  renderAccount();
+  $('#bettors-tab').hidden = !shared;
+  $('#balance').textContent = shared && !store.user ? '—' : fmt(balance());
+  const open = myBets().filter(b => settle(b, data.matches, champion) === 'open').length;
   $('#open-count').hidden = !open;
   $('#open-count').textContent = open;
   document.querySelectorAll('[role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
@@ -57,8 +70,9 @@ function render() {
 }
 
 function oddsButton(bet, label) {
-  const already = wallet.bets.some(b => b.key === bet.key);
-  return `<button class="odd${already ? ' taken' : ''}" data-bet='${esc(JSON.stringify(bet))}'>
+  const mine = myBets().find(b => sameSlot(b, bet));
+  const cls = !mine ? '' : mine.pick === bet.pick ? ' taken' : ' locked';
+  return `<button class="odd${cls}" data-bet='${esc(JSON.stringify(bet))}'>
     <span>${esc(label)}</span><strong>${bet.odds.toFixed(2)}</strong></button>`;
 }
 
@@ -84,7 +98,8 @@ function matchCard(m) {
   const base = { matchId: m.id, title: `${m.p1} vs ${m.p2}` };
   const winner = side => ({ ...base, market: 'winner', pick: side, odds: mk.winner[side].odds, key: `${m.id}:winner`, desc: `Gana ${side === 'p1' ? m.p1 : m.p2}` });
   const score = s => ({ ...base, market: 'score', pick: s, odds: mk.score[s].odds, key: `${m.id}:score:${s}`, desc: `Resultado exacto ${s} (sets, ${m.p1} primero)` });
-  return `<article class="card">${zone}
+  const n = shared ? store.bets.filter(b => b.matchId === m.id).length : 0;
+  return `<article class="card">${zone}${n ? `<span class="muted crowd">👥 ${n} apuesta${n > 1 ? 's' : ''}</span>` : ''}
     <div class="row">${oddsButton(winner('p1'), m.p1)}${oddsButton(winner('p2'), m.p2)}</div>
     <details><summary>Resultado exacto</summary>
       <div class="row four">${['2-0', '2-1', '1-2', '0-2'].map(s => oddsButton(score(s), s)).join('')}</div>
@@ -116,14 +131,39 @@ function renderOutright() {
 }
 
 function renderBets() {
-  if (!wallet.bets.length) return `<section class="empty"><h2>Todavía no apostaste</h2><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Elegí una cuota en Partidos o Campeón.</p></section>`;
+  if (shared && !store.user) return loginPrompt('Entrá con tu cuenta de Google para ver y hacer tus apuestas.');
+  const bets = myBets().sort((a, b) => a.placedAt.localeCompare(b.placedAt));
+  if (!bets.length) return `<section class="empty"><h2>Todavía no apostaste</h2><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Elegí una cuota en Partidos o Campeón.</p></section>`;
   const label = { open: 'Pendiente', won: 'Ganada', lost: 'Perdida' };
-  return `<section><h2>Mis apuestas</h2><div class="bets">${[...wallet.bets].reverse().map(b => {
+  return `<section><h2>Mis apuestas</h2><div class="bets">${[...bets].reverse().map(b => {
     const st = settle(b, data.matches, champion);
     return `<div class="bet ${st}"><div><strong>${esc(b.desc)}</strong><p class="muted">${esc(b.title)}</p></div>
       <div class="right"><span>${fmt(b.stake)} @ ${b.odds.toFixed(2)}</span><span class="status">${label[st]}${st === 'won' ? ` +${fmt(b.stake * b.odds)}` : ''}</span></div></div>`;
   }).join('')}</div>
-  <button class="ghost reset" id="reset">Reiniciar fichas</button></section>`;
+  ${store.reset ? '<button class="ghost reset" id="reset">Reiniciar fichas</button>' : ''}</section>`;
+}
+
+const loginPrompt = msg => `<section class="empty"><h2>Entrá para jugar</h2><p class="muted">${msg}</p>
+  <button class="google" id="login">${GOOGLE_G} Entrar con Google</button></section>`;
+
+// Tabla de apostadores: saldo actual = 1.000 − apostado + cobrado.
+function renderBettors() {
+  if (!store.user) return loginPrompt('Entrá con tu cuenta de Google para ver el ranking de apostadores.');
+  const byUser = {};
+  for (const b of store.bets) (byUser[b.uid] ??= []).push(b);
+  const rows = Object.values(store.users).map(u => {
+    const bets = byUser[u.uid] ?? [];
+    const st = bets.map(b => settle(b, data.matches, champion));
+    return { ...u, balance: balanceOf(bets), total: bets.length, won: st.filter(s => s === 'won').length, open: st.filter(s => s === 'open').length };
+  }).sort((a, b) => b.balance - a.balance || a.name.localeCompare(b.name));
+  return `<section><h2>Apostadores</h2>
+    <p class="muted">Todos arrancan con ${fmt(START_BALANCE)} fichas. El saldo cuenta lo apostado y lo cobrado.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Apostador</th><th>Apuestas</th><th>Ganadas</th><th>Pendientes</th><th>Fichas</th></tr></thead>
+      <tbody>${rows.map((r, i) => `<tr class="${r.uid === store.user.uid ? 'me' : ''}"><td>${i + 1}</td>
+        <td class="bettor">${r.photo ? `<img src="${esc(r.photo)}" alt="" referrerpolicy="no-referrer">` : ''}${esc(r.name)}</td>
+        <td>${r.total}</td><td>${r.won}</td><td>${r.open}</td><td><strong>${fmt(r.balance)}</strong></td></tr>`).join('')}
+      </tbody></table></div></section>`;
 }
 
 function renderRanking() {
@@ -223,14 +263,19 @@ document.querySelectorAll('.quick button').forEach(b => b.addEventListener('clic
   $('#stake').value = b.dataset.q === 'max' ? Math.floor(balance()) : Math.min(+b.dataset.q, Math.floor(balance()));
   updatePayout();
 }));
-$('#slip').addEventListener('close', () => {
+$('#slip').addEventListener('close', async () => {
   if ($('#slip').returnValue !== 'ok' || !current) return;
   const stake = Math.floor(+$('#stake').value);
   if (stake <= 0 || stake > balance()) return;
-  wallet.bets.push({ ...current, stake, placedAt: new Date().toISOString() });
-  saveWallet(wallet);
-  render();
+  const { key, ...bet } = current;
+  try {
+    await store.place({ ...bet, stake });
+  } catch (err) {
+    console.error(err);
+    alert('No se pudo guardar la apuesta. Puede que ya hayas apostado a este partido.');
+  }
 });
+store.onChange(render);
 
 document.addEventListener('click', e => {
   const tabBtn = e.target.closest('[role=tab]');
@@ -241,17 +286,18 @@ document.addEventListener('click', e => {
     render();
     return;
   }
+  if (e.target.closest('#login')) { store.signIn().catch(err => alert(`No se pudo entrar: ${err.message}`)); return; }
+  if (e.target.closest('#logout')) { store.signOut(); return; }
   const odd = e.target.closest('.odd');
   if (odd) {
+    const bet = JSON.parse(odd.dataset.bet);
+    if (shared && !store.user) { store.signIn().catch(err => alert(`No se pudo entrar: ${err.message}`)); return; }
+    if (myBets().some(b => sameSlot(b, bet))) { alert('Ya apostaste a este mercado. Las apuestas no se pueden cambiar.'); return; }
     if (balance() < 1) { alert('Te quedaste sin fichas 😅'); return; }
-    openSlip(JSON.parse(odd.dataset.bet));
+    openSlip(bet);
     return;
   }
-  if (e.target.id === 'reset' && confirm('¿Borrar todas tus apuestas y volver a 1.000 fichas?')) {
-    wallet.bets = [];
-    saveWallet(wallet);
-    render();
-  }
+  if (e.target.id === 'reset' && confirm('¿Borrar todas tus apuestas y volver a 1.000 fichas?')) store.reset();
 });
 
 $('#updated').textContent = `Actualizado ${new Date(data.updatedAt).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })}`;

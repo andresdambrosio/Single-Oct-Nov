@@ -17,9 +17,12 @@
         <p class="sub" id="updated"></p>
       </div>
     </div>
+    <div class="header-right">
+    <div id="account" class="account" hidden></div>
     <div class="wallet" title="Fichas de juego, no es plata real">
       <span class="label">Tus fichas</span>
       <strong id="balance">—</strong>
+    </div>
     </div>
   </header>
 
@@ -30,6 +33,7 @@
     <button role="tab" data-tab="players">Jugadores</button>
     <button role="tab" data-tab="outright">Campeón</button>
     <button role="tab" data-tab="bets">Mis apuestas <span id="open-count" class="pill" hidden></span></button>
+    <button role="tab" data-tab="bettors" id="bettors-tab" hidden>Apostadores</button>
   </nav>
 
   <main id="view"><p class="muted" style="padding:40px 0;text-align:center">Cargando el torneo… 🎾</p></main>

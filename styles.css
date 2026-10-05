@@ -140,9 +140,25 @@ dialog input { font: inherit; font-size: 1.2rem; padding: 10px; border-radius: 1
 .primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 10px 18px; font-weight: 600; }
 .ghost { background: none; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 10px 18px; }
 
+.header-right { display: flex; align-items: center; gap: 10px; }
+.account { display: flex; align-items: center; gap: 8px; font-size: .85rem; }
+.account img, .bettor img { width: 28px; height: 28px; border-radius: 50%; }
+.account .who { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.link { background: none; border: 0; color: var(--accent); padding: 0; }
+.google { display: inline-flex; align-items: center; gap: 8px; background: var(--surface); color: var(--text);
+  border: 1px solid var(--line); border-radius: 99px; padding: 8px 14px; font-weight: 600; white-space: nowrap; }
+.google:hover { border-color: var(--accent); }
+.empty .google { margin-top: 8px; }
+.odd.locked { opacity: .45; }
+.crowd { font-size: .75rem; justify-self: end; margin-top: -26px; }
+.bettor { display: flex; align-items: center; gap: 8px; }
+tr.me td { background: var(--surface-2); }
+
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 
 @media (max-width: 560px) {
+  .top { flex-wrap: wrap; }
+  .account .who { display: none; }
   .out-row { grid-template-columns: auto 1fr auto; }
   .out-row .odd { grid-column: 1 / -1; }
   .wallet { padding: 6px 10px; }
