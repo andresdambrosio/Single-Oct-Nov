@@ -37,8 +37,8 @@ const balance = () => balanceOf(myBets());
 const sameSlot = (a, b) => a.market === b.market && (a.market === 'champion' || a.matchId === b.matchId);
 
 // ---------- vistas ----------
-const views = { matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors, help: renderHelp };
-let tab = 'matches';
+const views = { home: renderHome, matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors, help: renderHelp };
+let tab = 'home';
 let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 const rank = ranking(data.players, data.matches);
 // Empates comparten posición (ej. todos en 1500 al arrancar).
@@ -75,6 +75,70 @@ function oddsButton(bet, label) {
   const cls = !mine ? '' : mine.pick === bet.pick ? ' taken' : ' locked';
   return `<button class="odd${cls}" data-bet='${esc(JSON.stringify(bet))}'>
     <span>${esc(label)}</span><strong>${bet.odds.toFixed(2)}</strong></button>`;
+}
+
+// Portada: qué es esto, cómo se juega y un resumen de todo con links a cada pestaña.
+function renderHome() {
+  const total = data.matches.length;
+  const played = data.matches.filter(m => m.result);
+  const pending = data.matches.filter(m => !m.result).sort((a, b) => a.week - b.week);
+  const nextWeek = pending[0]?.week;
+  const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 3);
+  const loggedIn = !shared || store.user;
+  const cta = shared && !store.user
+    ? `<button class="google big" id="login">${GOOGLE_G} Entrar con Google y recibir 1.000 fichas</button>`
+    : `<a class="primary big" href="#" data-goto="matches">Ir a apostar →</a>`;
+  const miniMatch = m => {
+    const mk = matchMarkets(m, ratings);
+    return `<a class="mini-match" href="#" data-goto="matches"><span class="zone z${m.zone}">${m.zone}</span>
+      <span class="mm-p">${esc(m.p1)}</span><strong>${mk.winner.p1.odds.toFixed(2)}</strong>
+      <span class="mm-p">${esc(m.p2)}</span><strong>${mk.winner.p2.odds.toFixed(2)}</strong></a>`;
+  };
+  const lastResults = [...played].sort((a, b) => b.week - a.week).slice(0, 3).map(m => {
+    const w = m.result.winner === 1 ? m.p1 : m.p2, l = m.result.winner === 1 ? m.p2 : m.p1;
+    const sets = m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ');
+    return `<li>${playerLink(w)} le ganó a ${playerLink(l)} <span class="muted">${sets}</span></li>`;
+  }).join('');
+  const top = rank.slice(0, 3).map(r => `<li><span class="pos">${r.position}</span>${playerLink(r.name)}<span class="muted">${fmt(r.rating)}</span></li>`).join('');
+  const bettors = shared && store.user ? bettorRows().filter(r => r.bets).slice(0, 3) : [];
+  const fav = data.players.map(p => ({ ...p, p: sim[p.name].champion })).sort((a, b) => b.p - a.p)[0];
+
+  return `<section class="hero">
+    <p class="eyebrow">Torneo de singles · 2026</p>
+    <h2>Pronosticá el torneo de Tini 🎾</h2>
+    <p class="lead">14 jugadores, 2 zonas, cuartos, semis y una final con asado a fin de noviembre.
+      Apostá <strong>fichas de juego</strong> a cada partido y demostrá quién sabe más de tenis. <strong>Sin plata real.</strong></p>
+    <div class="hero-cta">${cta}<a class="ghost big" href="#como-funciona">¿Cómo funciona?</a></div>
+  </section>
+
+  <section class="steps">
+    <div class="step"><span class="n">1</span><strong>Entrá con Google</strong><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Nadie ve tu mail.</p></div>
+    <div class="step"><span class="n">2</span><strong>Elegí una cuota</strong><p class="muted">Ganador o resultado exacto de cada partido, o el campeón.</p></div>
+    <div class="step"><span class="n">3</span><strong>Seguí el ranking</strong><p class="muted">Cuando Matías carga el resultado, se cobra solo.</p></div>
+  </section>
+
+  <section class="stats">
+    <a class="stat" href="#" data-goto="matches"><strong>${played.length}<span class="muted">/${total}</span></strong><span>partidos jugados</span>
+      <span class="bar wide" style="--w:${pct(played.length / total)}"></span></a>
+    <a class="stat" href="#" data-goto="outright"><strong>${esc(fav.name.split(' ')[0])} ${esc(fav.name.split(' ').slice(-1)[0][0])}.</strong><span>favorito al título (${pct(fav.p)})</span></a>
+    <a class="stat" href="#" data-goto="table"><strong>8</strong><span>pasan a cuartos, 4 por zona</span></a>
+  </section>
+
+  <div class="home-grid">
+    ${upcoming.length ? `<section class="panel"><h3>Próximos partidos <span class="muted">· semana ${nextWeek}</span></h3>
+      ${upcoming.map(miniMatch).join('')}
+      <a class="more" href="#" data-goto="matches">Ver todo el fixture →</a></section>` : ''}
+    <section class="panel"><h3>Últimos resultados</h3>
+      ${lastResults ? `<ul class="list">${lastResults}</ul>` : '<p class="muted">Todavía no hay partidos jugados.</p>'}
+      <a class="more" href="#" data-goto="table">Ver la tabla →</a></section>
+    <section class="panel"><h3>Ranking Elo</h3><ol class="list">${top}</ol>
+      <a class="more" href="#" data-goto="ranking">Ver ranking completo →</a></section>
+    <section class="panel"><h3>Ranking de fichas</h3>
+      ${!loggedIn ? '<p class="muted">Entrá con Google para ver quién va ganando.</p>'
+        : bettors.length ? `<ol class="list">${bettors.map((r, i) => `<li><span class="pos">${i + 1}</span>${esc(r.name)}<span class="muted">${fmt(r.total)}</span></li>`).join('')}</ol>`
+        : '<p class="muted">Todavía nadie apostó. ¡Sé el primero!</p>'}
+      <a class="more" href="#fichas">Ver ranking de fichas →</a></section>
+  </div>`;
 }
 
 function renderMatches() {
@@ -347,7 +411,7 @@ function renderPlayer(p) {
 }
 
 // Navegación por hash para poder compartir el link de un jugador.
-const HASH_TABS = { jugadores: 'players', fichas: 'bettors', 'como-funciona': 'help' };
+const HASH_TABS = { inicio: 'home', partidos: 'matches', jugadores: 'players', fichas: 'bettors', 'como-funciona': 'help' };
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith('h-')) { // ancla dentro de "Cómo funciona"

@@ -7,6 +7,7 @@ Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata
 
 ## Qué tiene
 
+- **Inicio**: portada con explicación, pasos para jugar y resumen (próximos partidos, resultados, rankings).
 - **Partidos**: fixture por semana con cuotas para ganador y resultado exacto en sets (2-0, 2-1, 1-2, 0-2).
 - **Tabla**: posiciones por zona según el reglamento (2 pts al ganador, 1 al perdedor que gana un set),
   con la probabilidad de clasificar a cuartos.

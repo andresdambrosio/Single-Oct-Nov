@@ -10,13 +10,13 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand">
+    <a class="brand" href="#" data-goto="home">
       <span class="ball" aria-hidden="true"></span>
       <div>
         <h1>Tini Tennis Tour</h1>
         <p class="sub" id="updated"></p>
       </div>
-    </div>
+    </a>
     <div class="header-right">
     <div id="account" class="account" hidden></div>
     <div class="wallet" title="Fichas de juego, no es plata real">
@@ -27,7 +27,8 @@
   </header>
 
   <nav class="tabs" role="tablist">
-    <button role="tab" data-tab="matches" aria-selected="true">Partidos</button>
+    <button role="tab" data-tab="home" aria-selected="true">Inicio</button>
+    <button role="tab" data-tab="matches">Partidos</button>
     <button role="tab" data-tab="table">Tabla</button>
     <button role="tab" data-tab="ranking">Ranking</button>
     <button role="tab" data-tab="players">Jugadores</button>
