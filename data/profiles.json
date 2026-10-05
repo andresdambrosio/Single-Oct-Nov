@@ -1,0 +1,103 @@
+{
+  "_info": "Fotos en assets/players/<id>.jpg (o URL). Completar bio, mano, revés, apodo.",
+  "players": {
+    "patricio-poleri": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "ariel-kosakoff": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "hugo-lopez": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "juan-pablo-gonzalez": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "andres-d-ambrosio": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "patricio-urdinez": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "roberto-ali": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "fernando-alberti": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "miguel-mendes": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "axel-lehmann": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "fernando-uriarte": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "federico-mencarini": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "matias-tini": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    },
+    "dionisio-alvarez": {
+      "nickname": "",
+      "photo": null,
+      "plays": "",
+      "backhand": "",
+      "bio": "Descripción pendiente."
+    }
+  }
+}

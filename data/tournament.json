@@ -1,0 +1,576 @@
+{
+  "name": "Tini Tennis Tour",
+  "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
+  "updatedAt": "2026-10-05T00:04:00.707Z",
+  "players": [
+    {
+      "id": "patricio-poleri",
+      "name": "Patricio Poleri",
+      "zone": "A"
+    },
+    {
+      "id": "ariel-kosakoff",
+      "name": "Ariel Kosakoff",
+      "zone": "A"
+    },
+    {
+      "id": "hugo-lopez",
+      "name": "Hugo Lopez",
+      "zone": "A"
+    },
+    {
+      "id": "juan-pablo-gonzalez",
+      "name": "Juan Pablo Gonzalez",
+      "zone": "A"
+    },
+    {
+      "id": "andres-d-ambrosio",
+      "name": "Andres D'Ambrosio",
+      "zone": "A"
+    },
+    {
+      "id": "patricio-urdinez",
+      "name": "Patricio Urdinez",
+      "zone": "A"
+    },
+    {
+      "id": "roberto-ali",
+      "name": "Roberto Ali",
+      "zone": "A"
+    },
+    {
+      "id": "fernando-alberti",
+      "name": "Fernando Alberti",
+      "zone": "B"
+    },
+    {
+      "id": "miguel-mendes",
+      "name": "Miguel Mendes",
+      "zone": "B"
+    },
+    {
+      "id": "axel-lehmann",
+      "name": "Axel Lehmann",
+      "zone": "B"
+    },
+    {
+      "id": "fernando-uriarte",
+      "name": "Fernando Uriarte",
+      "zone": "B"
+    },
+    {
+      "id": "federico-mencarini",
+      "name": "Federico Mencarini",
+      "zone": "B"
+    },
+    {
+      "id": "matias-tini",
+      "name": "Matias Tini",
+      "zone": "B"
+    },
+    {
+      "id": "dionisio-alvarez",
+      "name": "Dionisio Alvarez",
+      "zone": "B"
+    }
+  ],
+  "standings": {
+    "A": [
+      {
+        "name": "Patricio Poleri",
+        "played": 1,
+        "setsWon": 2,
+        "setsLost": 0,
+        "points": 2
+      },
+      {
+        "name": "Ariel Kosakoff",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Hugo Lopez",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Juan Pablo Gonzalez",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Andres D'Ambrosio",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Patricio Urdinez",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Roberto Ali",
+        "played": 1,
+        "setsWon": 0,
+        "setsLost": 2,
+        "points": 0
+      }
+    ],
+    "B": [
+      {
+        "name": "Fernando Alberti",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Miguel Mendes",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Axel Lehmann",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Fernando Uriarte",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Federico Mencarini",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Matias Tini",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      },
+      {
+        "name": "Dionisio Alvarez",
+        "played": 0,
+        "setsWon": 0,
+        "setsLost": 0,
+        "points": 0
+      }
+    ]
+  },
+  "matches": [
+    {
+      "id": "A-ariel-kosakoff-vs-juan-pablo-gonzalez",
+      "zone": "A",
+      "week": 1,
+      "p1": "Ariel Kosakoff",
+      "p2": "Juan Pablo Gonzalez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-hugo-lopez-vs-patricio-poleri",
+      "zone": "A",
+      "week": 1,
+      "p1": "Hugo Lopez",
+      "p2": "Patricio Poleri",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-patricio-urdinez-vs-roberto-ali",
+      "zone": "A",
+      "week": 1,
+      "p1": "Roberto Ali",
+      "p2": "Patricio Urdinez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-ariel-kosakoff",
+      "zone": "A",
+      "week": 2,
+      "p1": "Ariel Kosakoff",
+      "p2": "Andres D'Ambrosio",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-patricio-poleri-vs-patricio-urdinez",
+      "zone": "A",
+      "week": 2,
+      "p1": "Patricio Urdinez",
+      "p2": "Patricio Poleri",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-hugo-lopez-vs-roberto-ali",
+      "zone": "A",
+      "week": 2,
+      "p1": "Roberto Ali",
+      "p2": "Hugo Lopez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-roberto-ali",
+      "zone": "A",
+      "week": 3,
+      "p1": "Roberto Ali",
+      "p2": "Andres D'Ambrosio",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-juan-pablo-gonzalez-vs-patricio-poleri",
+      "zone": "A",
+      "week": 3,
+      "p1": "Juan Pablo Gonzalez",
+      "p2": "Patricio Poleri",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-hugo-lopez-vs-patricio-urdinez",
+      "zone": "A",
+      "week": 3,
+      "p1": "Patricio Urdinez",
+      "p2": "Hugo Lopez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-juan-pablo-gonzalez-vs-roberto-ali",
+      "zone": "A",
+      "week": 4,
+      "p1": "Roberto Ali",
+      "p2": "Juan Pablo Gonzalez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-ariel-kosakoff-vs-patricio-poleri",
+      "zone": "A",
+      "week": 4,
+      "p1": "Ariel Kosakoff",
+      "p2": "Patricio Poleri",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-hugo-lopez",
+      "zone": "A",
+      "week": 4,
+      "p1": "Andres D'Ambrosio",
+      "p2": "Hugo Lopez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-juan-pablo-gonzalez-vs-patricio-urdinez",
+      "zone": "A",
+      "week": 5,
+      "p1": "Patricio Urdinez",
+      "p2": "Juan Pablo Gonzalez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-ariel-kosakoff-vs-hugo-lopez",
+      "zone": "A",
+      "week": 5,
+      "p1": "Ariel Kosakoff",
+      "p2": "Hugo Lopez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-patricio-poleri",
+      "zone": "A",
+      "week": 5,
+      "p1": "Andres D'Ambrosio",
+      "p2": "Patricio Poleri",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-ariel-kosakoff-vs-patricio-urdinez",
+      "zone": "A",
+      "week": 6,
+      "p1": "Patricio Urdinez",
+      "p2": "Ariel Kosakoff",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-patricio-poleri-vs-roberto-ali",
+      "zone": "A",
+      "week": 6,
+      "p1": "Patricio Poleri",
+      "p2": "Roberto Ali",
+      "sets": [
+        [
+          7,
+          6
+        ],
+        [
+          6,
+          4
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      }
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-juan-pablo-gonzalez",
+      "zone": "A",
+      "week": 6,
+      "p1": "Andres D'Ambrosio",
+      "p2": "Juan Pablo Gonzalez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-andres-d-ambrosio-vs-patricio-urdinez",
+      "zone": "A",
+      "week": 7,
+      "p1": "Patricio Urdinez",
+      "p2": "Andres D'Ambrosio",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-ariel-kosakoff-vs-roberto-ali",
+      "zone": "A",
+      "week": 7,
+      "p1": "Ariel Kosakoff",
+      "p2": "Roberto Ali",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "A-hugo-lopez-vs-juan-pablo-gonzalez",
+      "zone": "A",
+      "week": 7,
+      "p1": "Hugo Lopez",
+      "p2": "Juan Pablo Gonzalez",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-miguel-mendes",
+      "zone": "B",
+      "week": 1,
+      "p1": "Miguel Mendes",
+      "p2": "Axel Lehmann",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-federico-mencarini-vs-fernando-uriarte",
+      "zone": "B",
+      "week": 1,
+      "p1": "Fernando Uriarte",
+      "p2": "Federico Mencarini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-fernando-alberti-vs-matias-tini",
+      "zone": "B",
+      "week": 1,
+      "p1": "Fernando Alberti",
+      "p2": "Matias Tini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-federico-mencarini-vs-matias-tini",
+      "zone": "B",
+      "week": 2,
+      "p1": "Federico Mencarini",
+      "p2": "Matias Tini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-fernando-uriarte-vs-miguel-mendes",
+      "zone": "B",
+      "week": 2,
+      "p1": "Fernando Uriarte",
+      "p2": "Miguel Mendes",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-fernando-alberti",
+      "zone": "B",
+      "week": 2,
+      "p1": "Fernando Alberti",
+      "p2": "Axel Lehmann",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-federico-mencarini-vs-miguel-mendes",
+      "zone": "B",
+      "week": 3,
+      "p1": "Miguel Mendes",
+      "p2": "Federico Mencarini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-matias-tini",
+      "zone": "B",
+      "week": 3,
+      "p1": "Axel Lehmann",
+      "p2": "Matias Tini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-fernando-alberti-vs-fernando-uriarte",
+      "zone": "B",
+      "week": 3,
+      "p1": "Fernando Alberti",
+      "p2": "Fernando Uriarte",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-fernando-alberti-vs-miguel-mendes",
+      "zone": "B",
+      "week": 4,
+      "p1": "Miguel Mendes",
+      "p2": "Fernando Alberti",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-fernando-uriarte-vs-matias-tini",
+      "zone": "B",
+      "week": 4,
+      "p1": "Fernando Uriarte",
+      "p2": "Matias Tini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-federico-mencarini",
+      "zone": "B",
+      "week": 4,
+      "p1": "Axel Lehmann",
+      "p2": "Federico Mencarini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-fernando-uriarte",
+      "zone": "B",
+      "week": 5,
+      "p1": "Axel Lehmann",
+      "p2": "Fernando Uriarte",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-matias-tini-vs-miguel-mendes",
+      "zone": "B",
+      "week": 5,
+      "p1": "Matias Tini",
+      "p2": "Miguel Mendes",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-federico-mencarini-vs-fernando-alberti",
+      "zone": "B",
+      "week": 5,
+      "p1": "Federico Mencarini",
+      "p2": "Fernando Alberti",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-dionisio-alvarez-vs-fernando-uriarte",
+      "zone": "B",
+      "week": 6,
+      "p1": "Dionisio Alvarez",
+      "p2": "Fernando Uriarte",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-dionisio-alvarez-vs-miguel-mendes",
+      "zone": "B",
+      "week": 6,
+      "p1": "Dionisio Alvarez",
+      "p2": "Miguel Mendes",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-dionisio-alvarez-vs-fernando-alberti",
+      "zone": "B",
+      "week": 6,
+      "p1": "Dionisio Alvarez",
+      "p2": "Fernando Alberti",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-axel-lehmann-vs-dionisio-alvarez",
+      "zone": "B",
+      "week": 7,
+      "p1": "Dionisio Alvarez",
+      "p2": "Axel Lehmann",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-dionisio-alvarez-vs-matias-tini",
+      "zone": "B",
+      "week": 7,
+      "p1": "Dionisio Alvarez",
+      "p2": "Matias Tini",
+      "sets": [],
+      "result": null
+    },
+    {
+      "id": "B-dionisio-alvarez-vs-federico-mencarini",
+      "zone": "B",
+      "week": 7,
+      "p1": "Dionisio Alvarez",
+      "p2": "Federico Mencarini",
+      "sets": [],
+      "result": null
+    }
+  ]
+}
