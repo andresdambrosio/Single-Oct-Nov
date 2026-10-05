@@ -1,9 +1,8 @@
-// Modelo de ratings, tabla de posiciones y cuotas. Sin dependencias del DOM: se testea con node --test.
+// Modelo de ratings, tabla de posiciones y probabilidades. Sin dependencias del DOM: se testea con node --test.
 import { PLAYOFF } from './sheet.js';
 
 export const BASE_RATING = 1500;
 const K = 48;
-const MARGIN = 0.06; // margen de la "casa" para que las cuotas no sumen exactamente 100%
 
 export const winProb = (ra, rb) => 1 / (1 + 10 ** ((rb - ra) / 400));
 
@@ -62,14 +61,13 @@ export function scoreProbs(p) {
   return { '2-0': s * s, '2-1': 2 * s * s * t, '1-2': 2 * t * t * s, '0-2': t * t };
 }
 
-export const toOdds = p => Math.max(1.05, Math.round((1 / (p * (1 + MARGIN))) * 100) / 100);
-
+// Probabilidades de un partido: quién gana y cada resultado exacto en sets (desde p1).
 export function matchMarkets(match, ratings) {
   const p = winProb(ratings[match.p1], ratings[match.p2]);
   const scores = scoreProbs(p);
   return {
-    winner: { p1: { p, odds: toOdds(p) }, p2: { p: 1 - p, odds: toOdds(1 - p) } },
-    score: Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, { p: v, odds: toOdds(v) }])),
+    winner: { p1: { p }, p2: { p: 1 - p } },
+    score: Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, { p: v }])),
   };
 }
 
@@ -139,18 +137,4 @@ export function simulateTournament(players, matches, ratings, runs = 4000, rng =
   }
   for (const v of Object.values(out)) { v.qualify /= runs; v.champion /= runs; }
   return out;
-}
-
-// Liquida una apuesta contra los datos actuales. Devuelve 'won' | 'lost' | 'open'.
-export function settle(bet, matches, championName = null) {
-  if (bet.market === 'champion') {
-    if (!championName) return 'open';
-    return bet.pick === championName ? 'won' : 'lost';
-  }
-  const m = matches.find(m => m.id === bet.matchId);
-  if (!m?.result) return 'open';
-  const { winner, setsP1, setsP2 } = m.result;
-  if (bet.market === 'winner') return (bet.pick === 'p1') === (winner === 1) ? 'won' : 'lost';
-  if (bet.market === 'score') return bet.pick === `${setsP1}-${setsP2}` ? 'won' : 'lost';
-  return 'open';
 }

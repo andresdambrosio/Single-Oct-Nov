@@ -1,7 +1,5 @@
-import { createStore } from './store.js';
-import { computeRatings, matchMarkets, ranking, settle, simulateTournament, standings, toOdds, winProb } from './model.js';
+import { computeRatings, matchMarkets, ranking, simulateTournament, standings, winProb } from './model.js';
 
-const START_BALANCE = 1000;
 const $ = sel => document.querySelector(sel);
 const fmt = n => Math.round(n).toLocaleString('es-AR');
 const pct = p => `${Math.round(p * 100)}%`;
@@ -12,344 +10,145 @@ const [data, profiles] = await Promise.all([
   fetch('data/profiles.json', { cache: 'no-cache' }).then(r => r.json()).then(j => j.players).catch(() => ({})),
 ]);
 const ratings = computeRatings(data.players, data.matches);
-// Semilla fija: las cuotas de campeón no cambian al recargar, sólo cuando entra un resultado.
+// Semilla fija: las probabilidades no cambian al recargar, sólo cuando entra un resultado.
 let seed = 20261004;
 const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const SIM_RUNS = 20000;
 const sim = simulateTournament(data.players, data.matches, ratings, SIM_RUNS, rng);
-const champion = null; // TODO: se completa cuando el playoff esté cargado en la planilla
 
-// ---------- apuestas ----------
-const store = await createStore();
-const shared = store.mode === 'firebase';
-const myBets = () => (store.user ? store.bets.filter(b => b.uid === store.user.uid) : []);
-
-function balanceOf(bets) {
-  let b = START_BALANCE;
-  for (const bet of bets) {
-    b -= bet.stake;
-    if (settle(bet, data.matches, champion) === 'won') b += bet.stake * bet.odds;
-  }
-  return b;
-}
-const balance = () => balanceOf(myBets());
-// Una apuesta por partido y mercado (y una sola a campeón).
-const sameSlot = (a, b) => a.market === b.market && (a.market === 'champion' || a.matchId === b.matchId);
-
-// ---------- vistas ----------
-const views = { home: renderHome, matches: renderMatches, table: renderTable, ranking: renderRanking, players: renderPlayers, outright: renderOutright, bets: renderBets, bettors: renderBettors, help: renderHelp };
-let tab = 'home';
-let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 const rank = ranking(data.players, data.matches);
 // Empates comparten posición (ej. todos en 1500 al arrancar).
 rank.forEach(r => { r.position = 1 + rank.filter(o => Math.round(o.rating) > Math.round(r.rating)).length; });
 const byName = Object.fromEntries(rank.map(r => [r.name, r]));
 const playerLink = name => `<a href="#jugador/${byName[name].id}" class="plink">${esc(name)}</a>`;
+const played = data.matches.filter(m => m.result);
+const pending = data.matches.filter(m => !m.result).sort((a, b) => a.week - b.week);
 
-function renderAccount() {
-  const el = $('#account');
-  if (!shared) { el.hidden = true; return; }
-  el.hidden = false;
-  if (!store.authReady) { el.innerHTML = ''; return; }
-  el.innerHTML = store.user
-    ? `${store.user.photo ? `<img src="${esc(store.user.photo)}" alt="" referrerpolicy="no-referrer">` : ''}
-       <span class="who">${esc(store.user.name)}</span><button class="link" id="logout">Salir</button>`
-    : `<button class="google" id="login">${GOOGLE_G} Entrar con Google</button>`;
-}
-const GOOGLE_G = `<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>`;
+// Sets desde el punto de vista del ganador: "6-4 6-2".
+const winnerSets = m => m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ');
+const winnerOf = m => (m.result.winner === 1 ? m.p1 : m.p2);
+const loserOf = m => (m.result.winner === 1 ? m.p2 : m.p1);
+
+// ---------- vistas ----------
+const views = { home: renderHome, table: renderTable, matches: renderMatches, ranking: renderRanking, players: renderPlayers, outlook: renderOutlook, help: renderHelp };
+let tab = 'home';
+let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 
 function render() {
-  renderAccount();
-  $('#balance').textContent = shared && !store.user ? '—' : fmt(balance());
-  const open = myBets().filter(b => settle(b, data.matches, champion) === 'open').length;
-  $('#open-count').hidden = !open;
-  $('#open-count').textContent = open;
   document.querySelectorAll('[role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === tab));
   document.querySelector('[role=tab][aria-selected=true]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   $('#view').innerHTML = views[tab]();
   if (tab === 'ranking') { $('#h2h-b').selectedIndex = 1; updateH2H(); }
 }
 
-function oddsButton(bet, label) {
-  const mine = myBets().find(b => sameSlot(b, bet));
-  const cls = !mine ? '' : mine.pick === bet.pick ? ' taken' : ' locked';
-  return `<button class="odd${cls}" data-bet='${esc(JSON.stringify(bet))}'>
-    <span>${esc(label)}</span><strong>${bet.odds.toFixed(2)}</strong></button>`;
-}
-
-// Portada: qué es esto, cómo se juega y un resumen de todo con links a cada pestaña.
+// Portada: resultados y rankings primero, con links a cada pestaña.
 function renderHome() {
   const total = data.matches.length;
-  const played = data.matches.filter(m => m.result);
-  const pending = data.matches.filter(m => !m.result).sort((a, b) => a.week - b.week);
   const nextWeek = pending[0]?.week;
-  const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 3);
-  const loggedIn = !shared || store.user;
-  const cta = shared && !store.user
-    ? `<button class="google big" id="login">${GOOGLE_G} Entrar con Google y recibir 1.000 fichas</button>`
-    : `<a class="primary big" href="#" data-goto="matches">Ir a apostar →</a>`;
-  const miniMatch = m => {
-    const mk = matchMarkets(m, ratings);
-    return `<a class="mini-match" href="#" data-goto="matches"><span class="zone z${m.zone}">${m.zone}</span>
-      <span class="mm-p">${esc(m.p1)}</span><strong>${mk.winner.p1.odds.toFixed(2)}</strong>
-      <span class="mm-p">${esc(m.p2)}</span><strong>${mk.winner.p2.odds.toFixed(2)}</strong></a>`;
-  };
-  const lastResults = [...played].sort((a, b) => b.week - a.week).slice(0, 3).map(m => {
-    const w = m.result.winner === 1 ? m.p1 : m.p2, l = m.result.winner === 1 ? m.p2 : m.p1;
-    const sets = m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ');
-    return `<li>${playerLink(w)} le ganó a ${playerLink(l)} <span class="muted">${sets}</span></li>`;
-  }).join('');
-  const top = rank.slice(0, 3).map(r => `<li><span class="pos">${r.position}</span>${playerLink(r.name)}<span class="muted">${fmt(r.rating)}</span></li>`).join('');
-  const bettors = shared && store.user ? bettorRows().filter(r => r.bets).slice(0, 3) : [];
+  const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 4);
+  const lastResults = [...played].sort((a, b) => b.week - a.week).slice(0, 5);
   const fav = data.players.map(p => ({ ...p, p: sim[p.name].champion })).sort((a, b) => b.p - a.p)[0];
+  const leaders = ['A', 'B'].map(z => {
+    const rows = standings(data.players, data.matches, z).slice(0, 4);
+    return `<div><h4>Zona ${z}</h4><ol class="list">${rows.map((r, i) => `<li><span class="pos">${i + 1}</span>${playerLink(r.name)}<span class="muted">${r.points} pts</span></li>`).join('')}</ol></div>`;
+  }).join('');
 
   return `<section class="hero">
-    <p class="eyebrow">Torneo de singles · 2026</p>
-    <h2>Pronosticá el torneo de singles 🎾</h2>
-    <p class="lead">14 jugadores, 2 zonas, cuartos, semis y una final con asado a fin de noviembre.
-      Apostá <strong>fichas de juego</strong> a cada partido y demostrá quién sabe más de tenis. <strong>Sin plata real.</strong></p>
-    <div class="hero-cta">${cta}<a class="ghost big" href="#como-funciona">¿Cómo funciona?</a></div>
-  </section>
-
-  <section class="steps">
-    <div class="step"><span class="n">1</span><strong>Entrá con Google</strong><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Nadie ve tu mail.</p></div>
-    <div class="step"><span class="n">2</span><strong>Elegí una cuota</strong><p class="muted">Ganador o resultado exacto de cada partido, o el campeón.</p></div>
-    <div class="step"><span class="n">3</span><strong>Seguí el ranking</strong><p class="muted">Cuando se carga el resultado, se cobra solo.</p></div>
+    <p class="eyebrow">Torneo de singles · Oct-Nov 2026</p>
+    <h2>Resultados, tabla y ranking del torneo 🎾</h2>
+    <p class="lead">14 jugadores en 2 zonas. Pasan los 4 mejores de cada una a cuartos, después semis y la final a fin de noviembre.</p>
+    <div class="hero-cta"><a class="light big" href="#" data-goto="table">Ver la tabla</a><a class="ghost big" href="#" data-goto="matches">Ver resultados</a></div>
   </section>
 
   <section class="stats">
     <a class="stat" href="#" data-goto="matches"><strong>${played.length}<span class="muted">/${total}</span></strong><span>partidos jugados</span>
       <span class="bar wide" style="--w:${pct(played.length / total)}"></span></a>
-    <a class="stat" href="#" data-goto="outright"><strong>${esc(fav.name.split(' ')[0])} ${esc(fav.name.split(' ').slice(-1)[0][0])}.</strong><span>favorito al título (${pct(fav.p)})</span></a>
-    <a class="stat" href="#" data-goto="table"><strong>8</strong><span>pasan a cuartos, 4 por zona</span></a>
+    ${nextWeek ? `<a class="stat" href="#" data-goto="matches"><strong>Semana ${nextWeek}</strong><span>${pending.filter(m => m.week === nextWeek).length} partidos por jugar</span></a>` : ''}
+    <a class="stat" href="#" data-goto="outlook"><strong>${esc(fav.name)}</strong><span>favorito al título según el modelo (${pct(fav.p)})</span></a>
   </section>
 
   <div class="home-grid">
-    ${upcoming.length ? `<section class="panel"><h3>Próximos partidos <span class="muted">· semana ${nextWeek}</span></h3>
-      ${upcoming.map(miniMatch).join('')}
-      <a class="more" href="#" data-goto="matches">Ver todo el fixture →</a></section>` : ''}
     <section class="panel"><h3>Últimos resultados</h3>
-      ${lastResults ? `<ul class="list">${lastResults}</ul>` : '<p class="muted">Todavía no hay partidos jugados.</p>'}
-      <a class="more" href="#" data-goto="table">Ver la tabla →</a></section>
-    <section class="panel"><h3>Ranking Elo</h3><ol class="list">${top}</ol>
+      ${lastResults.length ? `<ul class="list results">${lastResults.map(m => `<li><span>${playerLink(winnerOf(m))} le ganó a ${playerLink(loserOf(m))}</span><span class="muted">${winnerSets(m)}</span></li>`).join('')}</ul>`
+        : '<p class="muted">Todavía no hay partidos jugados.</p>'}
+      <a class="more" href="#" data-goto="matches">Ver todos los partidos →</a></section>
+    <section class="panel wide"><h3>Tabla <span class="muted">· clasifican 4 por zona</span></h3>
+      <div class="two-col">${leaders}</div>
+      <a class="more" href="#" data-goto="table">Ver la tabla completa →</a></section>
+    <section class="panel"><h3>Ranking Elo</h3>
+      <ol class="list">${rank.slice(0, 5).map(r => `<li><span class="pos">${r.position}</span>${playerLink(r.name)}<span class="muted">${fmt(r.rating)}</span></li>`).join('')}</ol>
       <a class="more" href="#" data-goto="ranking">Ver ranking completo →</a></section>
-    <section class="panel"><h3>Ranking de fichas</h3>
-      ${!loggedIn ? '<p class="muted">Entrá con Google para ver quién va ganando.</p>'
-        : bettors.length ? `<ol class="list">${bettors.map((r, i) => `<li><span class="pos">${i + 1}</span>${esc(r.name)}<span class="muted">${fmt(r.total)}</span></li>`).join('')}</ol>`
-        : '<p class="muted">Todavía nadie apostó. ¡Sé el primero!</p>'}
-      <a class="more" href="#fichas">Ver ranking de fichas →</a></section>
+    ${upcoming.length ? `<section class="panel wide"><h3>Próximos partidos <span class="muted">· semana ${nextWeek}</span></h3>
+      <div class="mini-grid">${upcoming.map(miniMatch).join('')}</div>
+      <a class="more" href="#" data-goto="matches">Ver el fixture →</a></section>` : ''}
   </div>`;
 }
 
-function renderMatches() {
-  const weeks = [...new Set(data.matches.map(m => m.week))].sort((a, b) => a - b);
-  const pendingFirst = weeks.map(w => {
-    const ms = data.matches.filter(m => m.week === w);
-    return `<section class="week"><h2>Semana ${w}</h2><div class="grid">${ms.map(matchCard).join('')}</div></section>`;
-  });
-  return pendingFirst.join('');
-}
-
-function matchCard(m) {
-  const zone = `<span class="zone z${m.zone}">Zona ${m.zone}</span>`;
-  if (m.result) {
-    const sets = m.sets.map(([a, b]) => `${a}-${b}`).join(' ');
-    const w = m.result.winner;
-    return `<article class="card done">${zone}
-      <div class="players"><span class="${w === 1 ? 'win' : ''}">${esc(m.p1)}</span><span class="vs">vs</span><span class="${w === 2 ? 'win' : ''}">${esc(m.p2)}</span></div>
-      <p class="result">${sets}</p></article>`;
-  }
-  const mk = matchMarkets(m, ratings);
-  const base = { matchId: m.id, title: `${m.p1} vs ${m.p2}` };
-  const winner = side => ({ ...base, market: 'winner', pick: side, odds: mk.winner[side].odds, key: `${m.id}:winner`, desc: `Gana ${side === 'p1' ? m.p1 : m.p2}` });
-  const score = s => ({ ...base, market: 'score', pick: s, odds: mk.score[s].odds, key: `${m.id}:score:${s}`, desc: `Resultado exacto ${s} (sets, ${m.p1} primero)` });
-  const n = shared ? store.bets.filter(b => b.matchId === m.id).length : 0;
-  return `<article class="card">${zone}${n ? `<span class="muted crowd">👥 ${n} apuesta${n > 1 ? 's' : ''}</span>` : ''}
-    <div class="row">${oddsButton(winner('p1'), m.p1)}${oddsButton(winner('p2'), m.p2)}</div>
-    <details><summary>Resultado exacto</summary>
-      <div class="row four">${['2-0', '2-1', '1-2', '0-2'].map(s => oddsButton(score(s), s)).join('')}</div>
-    </details></article>`;
+function miniMatch(m) {
+  const p = winProb(ratings[m.p1], ratings[m.p2]);
+  return `<a class="mini-match" href="#" data-goto="matches"><span class="zone z${m.zone}">${m.zone}</span>
+    <span class="mm-p">${esc(m.p1)}</span><strong>${pct(p)}</strong>
+    <span class="mm-p">${esc(m.p2)}</span><strong>${pct(1 - p)}</strong></a>`;
 }
 
 function renderTable() {
   return ['A', 'B'].map(z => {
     const rows = standings(data.players, data.matches, z);
     return `<section><h2>Zona ${z}</h2><div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Jugador</th><th>PJ</th><th>Sets</th><th>Pts</th><th title="Probabilidad de entrar a cuartos">Clasifica</th></tr></thead>
+      <thead><tr><th>#</th><th>Jugador</th><th>PJ</th><th>PG</th><th>Sets</th><th>Pts</th><th title="Probabilidad de entrar a cuartos según el modelo">Clasifica</th></tr></thead>
       <tbody>${rows.map((r, i) => `<tr class="${i < 4 ? 'in' : ''}">
-        <td>${i + 1}</td><td>${playerLink(r.name)}</td><td>${r.played}</td><td>${r.setsWon}-${r.setsLost}</td><td><strong>${r.points}</strong></td>
+        <td>${i + 1}</td><td>${playerLink(r.name)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.setsWon}-${r.setsLost}</td><td><strong>${r.points}</strong></td>
         <td><span class="bar" style="--w:${pct(sim[r.name].qualify)}"></span>${pct(sim[r.name].qualify)}</td></tr>`).join('')}
       </tbody></table></div></section>`;
   }).join('') + `<p class="muted note">Pasan a cuartos los 4 primeros de cada zona. Ganar suma 2 puntos; perder ganando un set suma 1. Desempate: partido entre ambos.</p>`;
 }
 
-function renderOutright() {
-  const list = data.players
-    .map(p => ({ ...p, p: sim[p.name].champion }))
-    .sort((a, b) => b.p - a.p);
+// Partidos: primero los resultados (más recientes arriba), después lo que falta por semana.
+function renderMatches() {
+  const results = [...played].sort((a, b) => b.week - a.week);
+  const weeks = [...new Set(pending.map(m => m.week))];
+  return `<section><h2>Resultados <span class="muted">· ${played.length} de ${data.matches.length}</span></h2>
+    ${results.length ? `<div class="grid">${results.map(resultCard).join('')}</div>` : '<p class="muted">Todavía no hay partidos jugados.</p>'}</section>
+    ${weeks.map(w => `<section class="week"><h2>Semana ${w} <span class="muted">· por jugar</span></h2>
+      <div class="grid">${pending.filter(m => m.week === w).map(pendingCard).join('')}</div></section>`).join('')}`;
+}
+
+function resultCard(m) {
+  const w = m.result.winner;
+  const row = (name, side) => `<div class="res-row${w === side ? ' win' : ''}"><span>${playerLink(name)}</span>
+    <span class="sets">${m.sets.map(s => `<b class="${s[side - 1] > s[2 - side] ? 'won' : ''}">${s[side - 1]}</b>`).join('')}</span></div>`;
+  return `<article class="card done"><div class="card-head"><span class="zone z${m.zone}">Zona ${m.zone}</span><span class="muted">Semana ${m.week}</span></div>
+    ${row(m.p1, 1)}${row(m.p2, 2)}</article>`;
+}
+
+function pendingCard(m) {
+  const mk = matchMarkets(m, ratings);
+  const p = mk.winner.p1.p;
+  const s = mk.score;
+  return `<article class="card"><span class="zone z${m.zone}">Zona ${m.zone}</span>
+    <div class="prob-row"><span>${playerLink(m.p1)}</span><strong>${pct(p)}</strong></div>
+    <div class="split thin"><span style="flex:${p}"></span><span style="flex:${1 - p}"></span></div>
+    <div class="prob-row"><span>${playerLink(m.p2)}</span><strong>${pct(1 - p)}</strong></div>
+    <details><summary>Resultado más probable</summary>
+      <p class="muted scores">${esc(m.p1.split(' ')[0])} 2-0: ${pct(s['2-0'].p)} · 2-1: ${pct(s['2-1'].p)} · ${esc(m.p2.split(' ')[0])} 2-1: ${pct(s['1-2'].p)} · 2-0: ${pct(s['0-2'].p)}</p>
+    </details></article>`;
+}
+
+function renderOutlook() {
+  const list = data.players.map(p => ({ ...p, ...sim[p.name] })).sort((a, b) => b.champion - a.champion || b.qualify - a.qualify);
   return `<section><h2>¿Quién sale campeón?</h2>
     <p class="muted">Probabilidades de ${fmt(SIM_RUNS)} simulaciones del resto del torneo según el rendimiento hasta ahora.</p>
-    <div class="outright">${list.map(p => {
-      const bet = { market: 'champion', pick: p.name, odds: toOdds(Math.max(p.p, 0.005)), key: `champion:${p.id}`, title: 'Campeón del torneo', desc: `${p.name} campeón` };
-      return `<div class="out-row"><span class="zone z${p.zone}">${p.zone}</span><span class="name">${playerLink(p.name)}</span><span class="muted">${pct(p.p)}</span>${oddsButton(bet, 'Apostar')}</div>`;
-    }).join('')}</div></section>`;
-}
-
-function renderBets() {
-  if (shared && !store.user) return loginPrompt('Entrá con tu cuenta de Google para ver y hacer tus apuestas.');
-  const bets = myBets().sort((a, b) => a.placedAt.localeCompare(b.placedAt));
-  if (!bets.length) return `<section class="empty"><h2>Todavía no apostaste</h2><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Elegí una cuota en Partidos o Campeón.</p></section>`;
-  const label = { open: 'Pendiente', won: 'Ganada', lost: 'Perdida' };
-  return `<section><h2>Mis apuestas</h2><div class="bets">${[...bets].reverse().map(b => {
-    const st = settle(b, data.matches, champion);
-    return `<div class="bet ${st}"><div><strong>${esc(b.desc)}</strong><p class="muted">${esc(b.title)}</p></div>
-      <div class="right"><span>${fmt(b.stake)} @ ${b.odds.toFixed(2)}</span><span class="status">${label[st]}${st === 'won' ? ` +${fmt(b.stake * b.odds)}` : ''}</span></div></div>`;
-  }).join('')}</div>
-  ${store.reset ? '<button class="ghost reset" id="reset">Reiniciar fichas</button>' : ''}</section>`;
-}
-
-const loginPrompt = msg => `<section class="empty"><h2>Entrá para jugar</h2><p class="muted">${msg}</p>
-  <button class="google" id="login">${GOOGLE_G} Entrar con Google</button></section>`;
-
-// Ranking de fichas. "Ganancia" sólo cuenta apuestas ya resueltas: lo que está en juego todavía no se perdió.
-function bettorRows() {
-  const byUser = {};
-  for (const b of store.bets) (byUser[b.uid] ??= []).push(b);
-  return Object.values(store.users).map(u => {
-    const bets = byUser[u.uid] ?? [];
-    const st = bets.map(b => settle(b, data.matches, champion));
-    const inPlay = bets.filter((b, i) => st[i] === 'open').reduce((a, b) => a + b.stake, 0);
-    const available = balanceOf(bets);
-    const won = st.filter(x => x === 'won').length;
-    const decided = st.filter(x => x !== 'open').length;
-    return { ...u, available, inPlay, total: available + inPlay, profit: available + inPlay - START_BALANCE, bets: bets.length, won, decided };
-  }).sort((a, b) => b.total - a.total || b.won - a.won || a.name.localeCompare(b.name));
-}
-
-const signed = n => (n > 0.5 ? `+${fmt(n)}` : fmt(n));
-const userPic = (u, cls = '') => u.photo
-  ? `<img class="${cls}" src="${esc(u.photo)}" alt="" referrerpolicy="no-referrer">`
-  : `<span class="${cls} nopic" aria-hidden="true">${esc((u.name || '?')[0].toUpperCase())}</span>`;
-
-function renderBettors() {
-  if (shared && !store.user) return loginPrompt('Entrá con tu cuenta de Google para ver quién va ganando con las fichas.');
-  const rows = bettorRows();
-  const me = store.user?.uid;
-  if (!rows.some(r => r.bets)) return `<section class="empty"><h2>Ranking de fichas</h2>
-    <p class="muted">Todavía nadie apostó. ¡Estrenalo! Elegí una cuota en Partidos.</p></section>`;
-  const medals = ['🥇', '🥈', '🥉'];
-  const podium = rows.slice(0, 3).map((r, i) => `<div class="podium-spot p${i + 1}${r.uid === me ? ' me' : ''}">
-      <span class="medal">${medals[i]}</span>${userPic(r, 'pic')}
-      <strong class="pname">${esc(r.name)}</strong>
-      <span class="ptotal">${fmt(r.total)}</span>
-      <span class="${r.profit > 0.5 ? 'up' : r.profit < -0.5 ? 'down' : 'muted'}">${signed(r.profit)}</span></div>`).join('');
-  return `<section><h2>Ranking de fichas</h2>
-    <p class="muted">Todos arrancan con ${fmt(START_BALANCE)}. Se ordena por fichas totales: las disponibles más las que están en juego en apuestas pendientes.</p>
-    <div class="podium">${podium}</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>#</th><th>Apostador</th><th>Total</th><th title="Ganancia o pérdida de apuestas ya resueltas">±</th><th>Disponibles</th><th>En juego</th><th>Aciertos</th></tr></thead>
-      <tbody>${rows.map((r, i) => `<tr class="${r.uid === me ? 'me' : ''}"><td>${i + 1}</td>
-        <td class="bettor">${userPic(r)}${esc(r.name)}</td>
-        <td><strong>${fmt(r.total)}</strong></td>
-        <td class="${r.profit > 0.5 ? 'up' : r.profit < -0.5 ? 'down' : ''}">${signed(r.profit)}</td>
-        <td>${fmt(r.available)}</td><td>${fmt(r.inPlay)}</td>
-        <td>${r.decided ? `${r.won}/${r.decided}` : '—'}</td></tr>`).join('')}
+      <thead><tr><th>Jugador</th><th>Zona</th><th>Clasifica</th><th>Campeón</th></tr></thead>
+      <tbody>${list.map(p => `<tr><td>${playerLink(p.name)}</td><td><span class="zone z${p.zone}">${p.zone}</span></td>
+        <td>${pct(p.qualify)}</td><td><span class="bar" style="--w:${Math.min(100, p.champion * 400)}%"></span>${pct(p.champion)}</td></tr>`).join('')}
       </tbody></table></div></section>`;
-}
-
-// Página explicativa. Los ejemplos usan las fórmulas reales del modelo para no desactualizarse.
-function renderHelp() {
-  const eloDelta = (ra, rb, dominance) => 48 * dominance * (1 - winProb(ra, rb));
-  const even = matchMarkets({ p1: 'a', p2: 'b' }, { a: 1500, b: 1500 });
-  const fav = matchMarkets({ p1: 'a', p2: 'b' }, { a: 1580, b: 1460 });
-  const example = data.matches.find(m => !m.result);
-  const exMk = example && matchMarkets(example, ratings);
-  const exName = n => esc(n.split(' ').slice(-1)[0]);
-  return `<article class="help">
-  <nav class="toc">
-    <a href="#h-fichas">Fichas</a><a href="#h-cuotas">Cuotas</a><a href="#h-exacto">Resultado exacto</a>
-    <a href="#h-reglas">Reglas</a><a href="#h-elo">Ranking Elo</a><a href="#h-campeon">Campeón</a><a href="#h-faq">Preguntas</a>
-  </nav>
-
-  <section id="h-fichas"><h2>🪙 Las fichas</h2>
-    <p>Cada uno arranca con <strong>${fmt(START_BALANCE)} fichas</strong>. No son plata real ni se compran: es sólo para jugar y ver quién la pega más.
-    Si te quedás sin fichas, no podés apostar más hasta cobrar alguna apuesta pendiente.</p>
-    <p>En <a href="#fichas">Ranking de fichas</a> se ve quién va ganando.</p></section>
-
-  <section id="h-cuotas"><h2>📈 Cómo leer una cuota</h2>
-    <p>La cuota es <strong>cuánto cobrás por cada ficha apostada</strong> si acertás (incluye lo que apostaste).</p>
-    <div class="callout">Apostás <strong>100</strong> a cuota <strong>${even.winner.p1.odds.toFixed(2)}</strong> → si acertás cobrás <strong>${fmt(100 * even.winner.p1.odds)}</strong>
-      (ganás ${fmt(100 * even.winner.p1.odds - 100)}). Si no, perdés las 100.</div>
-    <p>Cuota baja = favorito (más probable, paga poco). Cuota alta = punto (menos probable, paga mucho).
-    Con dos jugadores parejos ambos pagan ${even.winner.p1.odds.toFixed(2)}; si uno viene mejor, por ejemplo
-    ${fav.winner.p1.odds.toFixed(2)} contra ${fav.winner.p2.odds.toFixed(2)}.</p>
-    ${example ? `<p class="muted">Ejemplo real: en <em>${esc(example.p1)} vs ${esc(example.p2)}</em> hoy pagan
-      ${exMk.winner.p1.odds.toFixed(2)} y ${exMk.winner.p2.odds.toFixed(2)}.</p>` : ''}
-    <p>La cuota sale de la probabilidad del modelo: <code>cuota = 1 / (probabilidad × 1,06)</code>.
-    Ese 6% es el margen de la "casa", para que apostar a todo no sea negocio.</p>
-    <p><strong>La cuota queda fija</strong> en el momento en que apostás, aunque después cambie.</p></section>
-
-  <section id="h-exacto"><h2>🎯 Resultado exacto</h2>
-    <p>Se apuesta a cómo termina el partido en sets, <strong>siempre contando primero al jugador de arriba</strong> en la tarjeta:</p>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Botón</th><th>Significa</th><th>Cuota con jugadores parejos</th></tr></thead>
-      <tbody>
-        <tr><td><strong>2-0</strong></td><td>Gana el de arriba en 2 sets</td><td>${even.score['2-0'].odds.toFixed(2)}</td></tr>
-        <tr><td><strong>2-1</strong></td><td>Gana el de arriba en 3 (super tie-break)</td><td>${even.score['2-1'].odds.toFixed(2)}</td></tr>
-        <tr><td><strong>1-2</strong></td><td>Gana el de abajo en 3 (super tie-break)</td><td>${even.score['1-2'].odds.toFixed(2)}</td></tr>
-        <tr><td><strong>0-2</strong></td><td>Gana el de abajo en 2 sets</td><td>${even.score['0-2'].odds.toFixed(2)}</td></tr>
-      </tbody></table></div>
-    <p>Es más difícil de acertar que el ganador, por eso paga más.</p></section>
-
-  <section id="h-reglas"><h2>📋 Reglas de las apuestas</h2>
-    <ul>
-      <li><strong>Una apuesta por partido a ganador</strong> y <strong>una a resultado exacto</strong>. Se pueden hacer las dos.</li>
-      <li><strong>Una sola apuesta a campeón</strong> en todo el torneo.</li>
-      <li>Una vez hecha, <strong>no se puede cambiar ni cancelar</strong>.</li>
-      <li>Se puede apostar hasta que se carga el resultado en la planilla.</li>
-      <li>Las apuestas se cobran solas cuando se carga el resultado en la planilla (el sitio se actualiza cada 2 horas).</li>
-      <li>Si ganás las dos apuestas de un partido, cobrás las dos.</li>
-      <li>Todos los que entraron ven las apuestas de todos: en cada partido aparece cuántas hay (👥).</li>
-    </ul></section>
-
-  <section id="h-elo"><h2>📊 El ranking Elo</h2>
-    <p>Es el mismo sistema que se usa en ajedrez. Sirve para estimar quién es favorito en cada partido.</p>
-    <ul>
-      <li>Todos arrancan con <strong>1500 puntos</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
-      <li>En cada partido el ganador <strong>le saca puntos al perdedor</strong>.</li>
-      <li>Cuanto <strong>más inesperado</strong> el resultado, más puntos se mueven. Ganarle al favorito vale mucho; ganarle al último, poco.</li>
-      <li>Ganar <strong>2-0</strong> mueve más que ganar <strong>2-1</strong>.</li>
-    </ul>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Partido</th><th>Ganando 2-0</th><th>Ganando 2-1</th></tr></thead>
-      <tbody>
-        <tr><td>Parejos (1500 vs 1500)</td><td>±${fmt(eloDelta(1500, 1500, 1.25))}</td><td>±${fmt(eloDelta(1500, 1500, 0.85))}</td></tr>
-        <tr><td>El favorito gana (1560 vs 1440)</td><td>±${fmt(eloDelta(1560, 1440, 1.25))}</td><td>±${fmt(eloDelta(1560, 1440, 0.85))}</td></tr>
-        <tr><td>Sorpresa: gana el de 1440 contra 1560</td><td>±${fmt(eloDelta(1440, 1560, 1.25))}</td><td>±${fmt(eloDelta(1440, 1560, 0.85))}</td></tr>
-      </tbody></table></div>
-    <p>La probabilidad de que A le gane a B es <code>1 / (1 + 10<sup>(B − A) / 400</sup>)</code>. Por ejemplo, 100 puntos de diferencia ≈ ${pct(winProb(1600, 1500))} para el de arriba.</p>
-    <p class="muted">El Elo es independiente de la tabla del torneo: la tabla usa los puntos del reglamento (2 al ganador, 1 al perdedor que gana un set). Ver <a href="#" data-goto="ranking">Ranking</a>.</p></section>
-
-  <section id="h-campeon"><h2>🏆 Cuotas a campeón</h2>
-    <p>El sitio <strong>simula ${fmt(SIM_RUNS)} veces</strong> el resto del torneo: los partidos de zona que faltan y después cuartos, semis y final,
-    con el cuadro del reglamento (1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A, 2°A vs 3°B).
-    Si alguien sale campeón en ${fmt(SIM_RUNS / 10)} de las ${fmt(SIM_RUNS)} simulaciones, tiene 10% y su cuota es ${toOdds(0.1).toFixed(2)}.</p>
-    <p>Lo mismo da el "% Clasifica" de la <a href="#" data-goto="table">Tabla</a>.</p></section>
-
-  <section id="h-faq"><h2>❓ Preguntas</h2>
-    <details><summary>¿Quién paga lo que gano?</summary><p>Nadie: las fichas que cobrás las crea el sitio y las que perdés desaparecen. No hay plata de nadie en juego.</p></details>
-    <details><summary>¿Puedo apostar a los dos jugadores para no perder?</summary><p>Al ganador no: una apuesta por partido. Podés combinar ganador y resultado exacto, pero por el margen de la casa a la larga cubrirte hace perder fichas.</p></details>
-    <details><summary>¿Por qué cambian las cuotas?</summary><p>Porque con cada resultado se actualiza el Elo. Tu apuesta mantiene la cuota del momento en que la hiciste.</p></details>
-    <details><summary>¿Se ve mi mail?</summary><p>No. Los demás sólo ven tu nombre y tu foto de Google.</p></details>
-    <details><summary>¿Puedo apostar a mi propio partido?</summary><p>Sí, y también en contra 😅. Queda a la vista de todos.</p></details>
-  </section>
-  </article>`;
 }
 
 function renderRanking() {
   const opts = rank.map(r => `<option>${esc(r.name)}</option>`).join('');
   return `<section><h2>Ranking Elo</h2>
-    <p class="muted">Modelo Elo: todos arrancan con 1500 puntos (50% de chances contra cualquiera). Cada partido
+    <p class="muted">Todos arrancan con 1500 puntos (50% de chances contra cualquiera). Cada partido
     pasa puntos del perdedor al ganador; cuanto más inesperado el resultado, más puntos. Ganar 2-0 vale más que 2-1.</p>
     <div class="table-wrap"><table class="rank">
       <thead><tr><th>#</th><th>Jugador</th><th>Zona</th><th>PJ</th><th>Rating</th><th>±</th><th title="Probabilidad de ganarle a un jugador promedio">vs. promedio</th></tr></thead>
@@ -410,8 +209,54 @@ function renderPlayer(p) {
     <section><h2>Partidos</h2><ul class="fixture">${ms.map(line).join('')}</ul></section>`;
 }
 
-// Navegación por hash para poder compartir el link de un jugador.
-const HASH_TABS = { inicio: 'home', partidos: 'matches', jugadores: 'players', fichas: 'bettors', 'como-funciona': 'help' };
+// Página explicativa. Los ejemplos usan las fórmulas reales del modelo para no desactualizarse.
+function renderHelp() {
+  const eloDelta = (ra, rb, dominance) => 48 * dominance * (1 - winProb(ra, rb));
+  return `<article class="help">
+  <nav class="toc">
+    <a href="#h-tabla">Tabla</a><a href="#h-elo">Ranking Elo</a><a href="#h-prob">Probabilidades</a><a href="#h-datos">Datos</a>
+  </nav>
+
+  <section id="h-tabla"><h2>📋 La tabla</h2>
+    <ul>
+      <li>Dos zonas de 7 jugadores, todos contra todos.</li>
+      <li>Partidos al mejor de 3 sets; si se llega al tercero, se juega un super tie-break a 10.</li>
+      <li>El ganador suma <strong>2 puntos</strong>. El que pierde suma <strong>1 punto si ganó un set</strong>, si no 0.</li>
+      <li>Desempate: el partido entre ambos. Si empatan 3 o más, se miran los partidos entre ellos y después la diferencia de sets.</li>
+      <li>Los 4 primeros de cada zona pasan a cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.</li>
+    </ul></section>
+
+  <section id="h-elo"><h2>📊 El ranking Elo</h2>
+    <p>Es el mismo sistema que se usa en ajedrez: mide el nivel de cada jugador según a quién le ganó y a quién no.</p>
+    <ul>
+      <li>Todos arrancan con <strong>1500 puntos</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
+      <li>En cada partido el ganador <strong>le saca puntos al perdedor</strong>.</li>
+      <li>Cuanto <strong>más inesperado</strong> el resultado, más puntos se mueven. Ganarle al favorito vale mucho; ganarle al último, poco.</li>
+      <li>Ganar <strong>2-0</strong> mueve más que ganar <strong>2-1</strong>.</li>
+    </ul>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Partido</th><th>Ganando 2-0</th><th>Ganando 2-1</th></tr></thead>
+      <tbody>
+        <tr><td>Parejos (1500 vs 1500)</td><td>±${fmt(eloDelta(1500, 1500, 1.25))}</td><td>±${fmt(eloDelta(1500, 1500, 0.85))}</td></tr>
+        <tr><td>El favorito gana (1560 vs 1440)</td><td>±${fmt(eloDelta(1560, 1440, 1.25))}</td><td>±${fmt(eloDelta(1560, 1440, 0.85))}</td></tr>
+        <tr><td>Sorpresa: gana el de 1440 contra 1560</td><td>±${fmt(eloDelta(1440, 1560, 1.25))}</td><td>±${fmt(eloDelta(1440, 1560, 0.85))}</td></tr>
+      </tbody></table></div>
+    <p>La probabilidad de que A le gane a B es <code>1 / (1 + 10<sup>(B − A) / 400</sup>)</code>. Por ejemplo, 100 puntos de diferencia ≈ ${pct(winProb(1600, 1500))} para el de arriba.</p>
+    <p class="muted">El Elo es independiente de la tabla: la tabla usa los puntos del reglamento.</p></section>
+
+  <section id="h-prob"><h2>🔮 Probabilidades</h2>
+    <p>En cada partido por jugar se muestra la chance de cada uno según el Elo, y en "Resultado más probable" la chance de cada marcador en sets.</p>
+    <p>Para "Clasifica" y "Campeón", el sitio <strong>simula ${fmt(SIM_RUNS)} veces</strong> el resto del torneo: los partidos de zona que faltan
+    y después cuartos, semis y final. Si alguien sale campeón en ${fmt(SIM_RUNS / 10)} de las ${fmt(SIM_RUNS)} simulaciones, tiene 10%.</p>
+    <p class="muted">Es un modelo simple que sólo mira los resultados de este torneo. Es para divertirse, no lo tomes muy en serio 😅</p></section>
+
+  <section id="h-datos"><h2>🔄 De dónde salen los datos</h2>
+    <p>Todo sale de la planilla del torneo. El sitio la revisa cada 2 horas, así que un resultado cargado ahí aparece acá en ese plazo.</p></section>
+  </article>`;
+}
+
+// Navegación por hash para poder compartir links.
+const HASH_TABS = { inicio: 'home', tabla: 'table', partidos: 'matches', ranking: 'ranking', jugadores: 'players', pronostico: 'outlook', 'como-funciona': 'help' };
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith('h-')) { // ancla dentro de "Cómo funciona"
@@ -427,67 +272,18 @@ function route() {
 window.addEventListener('hashchange', route);
 document.addEventListener('change', e => { if (e.target.id?.startsWith('h2h-')) updateH2H(); });
 
-// ---------- boleta ----------
-let current = null;
-function openSlip(bet) {
-  current = bet;
-  $('#slip-title').textContent = bet.title;
-  $('#slip-desc').textContent = `${bet.desc} · cuota ${bet.odds.toFixed(2)}`;
-  const stake = $('#stake');
-  stake.max = Math.floor(balance());
-  stake.value = Math.min(50, Math.floor(balance()));
-  updatePayout();
-  $('#slip').showModal();
-  stake.focus();
-}
-function updatePayout() {
-  $('#payout').textContent = fmt((+$('#stake').value || 0) * (current?.odds ?? 0));
-}
-
-$('#stake').addEventListener('input', updatePayout);
-document.querySelectorAll('.quick button').forEach(b => b.addEventListener('click', () => {
-  $('#stake').value = b.dataset.q === 'max' ? Math.floor(balance()) : Math.min(+b.dataset.q, Math.floor(balance()));
-  updatePayout();
-}));
-$('#slip').addEventListener('close', async () => {
-  if ($('#slip').returnValue !== 'ok' || !current) return;
-  const stake = Math.floor(+$('#stake').value);
-  if (stake <= 0 || stake > balance()) return;
-  const { key, ...bet } = current;
-  try {
-    await store.place({ ...bet, stake });
-  } catch (err) {
-    console.error(err);
-    alert('No se pudo guardar la apuesta. Puede que ya hayas apostado a este partido.');
-  }
-});
-store.onChange(render);
-
 document.addEventListener('click', e => {
   const goto = e.target.closest('[data-goto]');
   const tabBtn = e.target.closest('[role=tab]') ?? goto;
-  if (tabBtn) {
-    e.preventDefault();
-    tab = tabBtn.dataset.tab ?? goto.dataset.goto;
-    selectedPlayer = null;
-    if (location.hash) history.replaceState(null, '', location.pathname);
-    render();
-    return;
-  }
-  if (e.target.closest('#login')) { store.signIn().catch(err => alert(`No se pudo entrar: ${err.message}`)); return; }
-  if (e.target.closest('#logout')) { store.signOut(); return; }
-  const odd = e.target.closest('.odd');
-  if (odd) {
-    const bet = JSON.parse(odd.dataset.bet);
-    if (shared && !store.user) { store.signIn().catch(err => alert(`No se pudo entrar: ${err.message}`)); return; }
-    if (myBets().some(b => sameSlot(b, bet))) { alert('Ya apostaste a este mercado. Las apuestas no se pueden cambiar.'); return; }
-    if (balance() < 1) { alert('Te quedaste sin fichas 😅'); return; }
-    openSlip(bet);
-    return;
-  }
-  if (e.target.id === 'reset' && confirm('¿Borrar todas tus apuestas y volver a 1.000 fichas?')) store.reset();
+  if (!tabBtn) return;
+  e.preventDefault();
+  tab = tabBtn.dataset.tab ?? goto.dataset.goto;
+  selectedPlayer = null;
+  if (location.hash) history.replaceState(null, '', location.pathname);
+  render();
+  window.scrollTo(0, 0);
 });
 
-$('#updated').textContent = `Actualizado ${new Date(data.updatedAt).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })}`;
 $('#source').href = data.source;
+$('#updated').textContent = `Actualizado ${new Date(data.updatedAt).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' })}`;
 route();

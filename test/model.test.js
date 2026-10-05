@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFixture, parseStandings, summarize } from '../src/sheet.js';
-import { computeRatings, scoreProbs, settle, simulateTournament, standings, winProb } from '../src/model.js';
+import { computeRatings, matchMarkets, scoreProbs, simulateTournament, standings, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
 test('summarize aplica el reglamento de puntos', () => {
@@ -40,6 +40,12 @@ test('el fixture sincronizado es todos-contra-todos en cada zona', () => {
   }
 });
 
+test('matchMarkets: probabilidades de ganador suman 1', () => {
+  const mk = matchMarkets({ p1: 'a', p2: 'b' }, { a: 1550, b: 1450 });
+  assert.ok(mk.winner.p1.p > 0.5);
+  assert.ok(Math.abs(mk.winner.p1.p + mk.winner.p2.p - 1) < 1e-12);
+});
+
 test('las probabilidades de resultado exacto suman la de ganar', () => {
   const p = 0.63;
   const s = scoreProbs(p);
@@ -70,15 +76,6 @@ test('la simulación reparte 100% de probabilidad de campeón', () => {
   assert.ok(Math.abs(total - 1) < 1e-9);
   const qualified = Object.values(sim).reduce((a, v) => a + v.qualify, 0);
   assert.ok(Math.abs(qualified - 8) < 1e-9);
-});
-
-test('settle liquida apuestas de ganador y resultado exacto', () => {
-  const m = data.matches.find(m => m.result);
-  const won = m.result.winner === 1 ? 'p1' : 'p2';
-  assert.equal(settle({ market: 'winner', matchId: m.id, pick: won }, data.matches), 'won');
-  assert.equal(settle({ market: 'score', matchId: m.id, pick: '1-2' }, data.matches), 'lost');
-  const open = data.matches.find(m => !m.result);
-  assert.equal(settle({ market: 'winner', matchId: open.id, pick: 'p1' }, data.matches), 'open');
 });
 
 test('ranking: sin partidos todos arrancan iguales (50%)', async () => {

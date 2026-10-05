@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Single Oct-Nov</title>
-  <meta name="description" content="Pronósticos con fichas de juego del torneo de singles Oct-Nov.">
+  <meta name="description" content="Resultados, tabla y ranking del torneo de singles Oct-Nov.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>">
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -17,54 +17,23 @@
         <p class="sub" id="updated"></p>
       </div>
     </a>
-    <div class="header-right">
-    <div id="account" class="account" hidden></div>
-    <div class="wallet" title="Fichas de juego, no es plata real">
-      <span class="label">Tus fichas</span>
-      <strong id="balance">—</strong>
-    </div>
-    </div>
   </header>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="home" aria-selected="true">Inicio</button>
-    <button role="tab" data-tab="matches">Partidos</button>
     <button role="tab" data-tab="table">Tabla</button>
+    <button role="tab" data-tab="matches">Partidos</button>
     <button role="tab" data-tab="ranking">Ranking</button>
     <button role="tab" data-tab="players">Jugadores</button>
-    <button role="tab" data-tab="outright">Campeón</button>
-    <button role="tab" data-tab="bets">Mis apuestas <span id="open-count" class="pill" hidden></span></button>
-    <button role="tab" data-tab="bettors">Ranking de fichas</button>
+    <button role="tab" data-tab="outlook">Pronóstico</button>
     <button role="tab" data-tab="help">Cómo funciona</button>
   </nav>
 
   <main id="view"><p class="muted" style="padding:40px 0;text-align:center">Cargando el torneo… 🎾</p></main>
 
   <footer class="foot">
-    Las apuestas son fichas de juego, sin plata real.
-    <a id="source" target="_blank" rel="noopener">Ver planilla</a>
+    Torneo amateur de singles. <a id="source" target="_blank" rel="noopener">Ver planilla</a>
   </footer>
-
-  <dialog id="slip">
-    <form method="dialog" id="slip-form">
-      <h2 id="slip-title"></h2>
-      <p id="slip-desc" class="muted"></p>
-      <label>Monto
-        <input id="stake" type="number" min="1" step="1" inputmode="numeric" required>
-      </label>
-      <div class="quick">
-        <button type="button" data-q="25">25</button>
-        <button type="button" data-q="50">50</button>
-        <button type="button" data-q="100">100</button>
-        <button type="button" data-q="max">Todo</button>
-      </div>
-      <p class="payout">Cobrás <strong id="payout">0</strong> si acertás</p>
-      <div class="actions">
-        <button value="cancel" formnovalidate class="ghost">Cancelar</button>
-        <button value="ok" class="primary">Apostar</button>
-      </div>
-    </form>
-  </dialog>
 
   <script type="module" src="src/app.js"></script>
 </body>

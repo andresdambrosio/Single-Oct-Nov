@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pronósticos y apuestas (con fichas de juego) del torneo amateur de singles Oct-Nov.",
+  "description": "Resultados, tabla y ranking del torneo amateur de singles Oct-Nov.",
   "scripts": {
     "sync": "node scripts/sync.mjs",
     "dev": "python3 -m http.server 5173",
