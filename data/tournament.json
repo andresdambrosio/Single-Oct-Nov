@@ -1,26 +1,21 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-05T00:04:00.707Z",
+  "updatedAt": "2026-10-05T19:13:08.991Z",
   "players": [
+    {
+      "id": "juan-pablo-gonzalez",
+      "name": "Juan Pablo Gonzalez",
+      "zone": "A"
+    },
     {
       "id": "patricio-poleri",
       "name": "Patricio Poleri",
       "zone": "A"
     },
     {
-      "id": "ariel-kosakoff",
-      "name": "Ariel Kosakoff",
-      "zone": "A"
-    },
-    {
       "id": "hugo-lopez",
       "name": "Hugo Lopez",
-      "zone": "A"
-    },
-    {
-      "id": "juan-pablo-gonzalez",
-      "name": "Juan Pablo Gonzalez",
       "zone": "A"
     },
     {
@@ -36,6 +31,11 @@
     {
       "id": "roberto-ali",
       "name": "Roberto Ali",
+      "zone": "A"
+    },
+    {
+      "id": "ariel-kosakoff",
+      "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
@@ -77,6 +77,13 @@
   "standings": {
     "A": [
       {
+        "name": "Juan Pablo Gonzalez",
+        "played": 1,
+        "setsWon": 2,
+        "setsLost": 0,
+        "points": 2
+      },
+      {
         "name": "Patricio Poleri",
         "played": 1,
         "setsWon": 2,
@@ -84,21 +91,7 @@
         "points": 2
       },
       {
-        "name": "Ariel Kosakoff",
-        "played": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
-      },
-      {
         "name": "Hugo Lopez",
-        "played": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
-      },
-      {
-        "name": "Juan Pablo Gonzalez",
         "played": 0,
         "setsWon": 0,
         "setsLost": 0,
@@ -120,6 +113,13 @@
       },
       {
         "name": "Roberto Ali",
+        "played": 1,
+        "setsWon": 0,
+        "setsLost": 2,
+        "points": 0
+      },
+      {
+        "name": "Ariel Kosakoff",
         "played": 1,
         "setsWon": 0,
         "setsLost": 2,
@@ -185,8 +185,23 @@
       "week": 1,
       "p1": "Ariel Kosakoff",
       "p2": "Juan Pablo Gonzalez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          4,
+          6
+        ],
+        [
+          2,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      }
     },
     {
       "id": "A-hugo-lopez-vs-patricio-poleri",
