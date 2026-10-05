@@ -48,12 +48,17 @@ test('las probabilidades de resultado exacto suman la de ganar', () => {
 });
 
 test('ganar sube el rating y la tabla calcula puntos', () => {
-  const r = computeRatings(data.players, data.matches);
-  assert.ok(r['Patricio Poleri'] > r['Roberto Ali']);
-  assert.ok(winProb(r['Patricio Poleri'], r['Roberto Ali']) > 0.5);
-  const top = standings(data.players, data.matches, 'A')[0];
-  assert.equal(top.name, 'Patricio Poleri');
-  assert.equal(top.points, 2);
+  // Datos fijos (no la planilla real, que cambia con cada resultado).
+  const players = ['Ana', 'Bea', 'Caro'].map(name => ({ name, zone: 'A' }));
+  const matches = [
+    { id: 'm1', zone: 'A', week: 1, p1: 'Ana', p2: 'Bea', result: summarize([[6, 3], [6, 4]]) },
+    { id: 'm2', zone: 'A', week: 2, p1: 'Caro', p2: 'Bea', result: summarize([[6, 3], [3, 6], [10, 8]]) },
+  ];
+  const r = computeRatings(players, matches);
+  assert.ok(r.Ana > 1500 && r.Bea < 1500);
+  assert.ok(winProb(r.Ana, r.Bea) > 0.5);
+  const table = standings(players, matches, 'A');
+  assert.deepEqual(table.map(t => [t.name, t.points]), [['Ana', 2], ['Caro', 2], ['Bea', 1]]);
 });
 
 test('la simulación reparte 100% de probabilidad de campeón', () => {
