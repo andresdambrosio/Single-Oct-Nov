@@ -1,7 +1,7 @@
 # 🎾 Single Oct-Nov
 
 Sitio de pronósticos de un torneo amateur de singles.
-🌐 **Sitio:** https://andresdambrosio.github.io/Tini-Tennis-Tour/
+🌐 **Sitio:** https://andresdambrosio.github.io/Single-Oct-Nov/
 
 Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata real.
 
@@ -62,7 +62,7 @@ Reglas del modo compartido:
 
 Para activarlo (gratis, plan Spark):
 
-1. Entrar a https://console.firebase.google.com y crear un proyecto (ej. `tini-tennis-tour`). Analytics no hace falta.
+1. Entrar a https://console.firebase.google.com y crear un proyecto (ej. `single-oct-nov`). Analytics no hace falta.
 2. **Authentication → Comenzar → Google** → habilitar y guardar.
 3. **Authentication → Configuración → Dominios autorizados** → agregar `andresdambrosio.github.io`.
 4. **Firestore Database → Crear base de datos**, en modo producción y en la región `southamerica-east1`.
