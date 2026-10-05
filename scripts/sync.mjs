@@ -30,7 +30,7 @@ for (const zone of ['A', 'B']) {
 }
 
 const data = {
-  name: 'Tini Tennis Tour',
+  name: 'Single Oct-Nov',
   source: `https://docs.google.com/spreadsheets/d/${SHEET_ID}`,
   updatedAt: new Date().toISOString(),
   players,

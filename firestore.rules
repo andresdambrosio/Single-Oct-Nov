@@ -1,6 +1,6 @@
 rules_version = '2';
 
-// Reglas de Firestore para Tini Tennis Tour.
+// Reglas de Firestore para el sitio de pronósticos del Single Oct-Nov.
 // Copiar en Consola de Firebase → Firestore → Reglas → Publicar.
 service cloud.firestore {
   match /databases/{database}/documents {

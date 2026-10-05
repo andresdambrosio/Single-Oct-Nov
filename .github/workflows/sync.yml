@@ -1,6 +1,6 @@
 name: Sync planilla
 
-# Baja la planilla de Matías cada 2 horas y commitea si cambió algún resultado.
+# Baja la planilla del torneo cada 2 horas y commitea si cambió algún resultado.
 on:
   schedule:
     - cron: '0 */2 * * *'
@@ -23,8 +23,8 @@ jobs:
         run: |
           # updatedAt cambia siempre; sólo commiteamos si cambió algo más.
           if git diff -U0 data/tournament.json | grep '^[+-] ' | grep -qv '"updatedAt"'; then
-            git config user.name "tini-bot"
-            git config user.email "tini-bot@users.noreply.github.com"
+            git config user.name "sync-bot"
+            git config user.email "sync-bot@users.noreply.github.com"
             git commit -am "Sync resultados desde la planilla"
             git push
           else

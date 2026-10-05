@@ -1,6 +1,6 @@
-# 🎾 Tini Tennis Tour
+# 🎾 Single Oct-Nov
 
-Sitio de pronósticos del torneo amateur de singles que organiza Matías Tini.
+Sitio de pronósticos de un torneo amateur de singles.
 🌐 **Sitio:** https://andresdambrosio.github.io/Tini-Tennis-Tour/
 
 Las apuestas son **con fichas de juego** (cada uno arranca con 1.000), sin plata real.

@@ -105,7 +105,7 @@ function renderHome() {
 
   return `<section class="hero">
     <p class="eyebrow">Torneo de singles · 2026</p>
-    <h2>Pronosticá el torneo de Tini 🎾</h2>
+    <h2>Pronosticá el torneo de singles 🎾</h2>
     <p class="lead">14 jugadores, 2 zonas, cuartos, semis y una final con asado a fin de noviembre.
       Apostá <strong>fichas de juego</strong> a cada partido y demostrá quién sabe más de tenis. <strong>Sin plata real.</strong></p>
     <div class="hero-cta">${cta}<a class="ghost big" href="#como-funciona">¿Cómo funciona?</a></div>
@@ -114,7 +114,7 @@ function renderHome() {
   <section class="steps">
     <div class="step"><span class="n">1</span><strong>Entrá con Google</strong><p class="muted">Arrancás con ${fmt(START_BALANCE)} fichas. Nadie ve tu mail.</p></div>
     <div class="step"><span class="n">2</span><strong>Elegí una cuota</strong><p class="muted">Ganador o resultado exacto de cada partido, o el campeón.</p></div>
-    <div class="step"><span class="n">3</span><strong>Seguí el ranking</strong><p class="muted">Cuando Matías carga el resultado, se cobra solo.</p></div>
+    <div class="step"><span class="n">3</span><strong>Seguí el ranking</strong><p class="muted">Cuando se carga el resultado, se cobra solo.</p></div>
   </section>
 
   <section class="stats">
@@ -307,7 +307,7 @@ function renderHelp() {
       <li><strong>Una sola apuesta a campeón</strong> en todo el torneo.</li>
       <li>Una vez hecha, <strong>no se puede cambiar ni cancelar</strong>.</li>
       <li>Se puede apostar hasta que se carga el resultado en la planilla.</li>
-      <li>Las apuestas se cobran solas cuando Matías carga el resultado (el sitio se actualiza cada 2 horas).</li>
+      <li>Las apuestas se cobran solas cuando se carga el resultado en la planilla (el sitio se actualiza cada 2 horas).</li>
       <li>Si ganás las dos apuestas de un partido, cobrás las dos.</li>
       <li>Todos los que entraron ven las apuestas de todos: en cada partido aparece cuántas hay (👥).</li>
     </ul></section>
@@ -348,7 +348,7 @@ function renderHelp() {
 
 function renderRanking() {
   const opts = rank.map(r => `<option>${esc(r.name)}</option>`).join('');
-  return `<section><h2>Ranking Tini</h2>
+  return `<section><h2>Ranking Elo</h2>
     <p class="muted">Modelo Elo: todos arrancan con 1500 puntos (50% de chances contra cualquiera). Cada partido
     pasa puntos del perdedor al ganador; cuanto más inesperado el resultado, más puntos. Ganar 2-0 vale más que 2-1.</p>
     <div class="table-wrap"><table class="rank">
