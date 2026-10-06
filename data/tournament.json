@@ -1,8 +1,13 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-05T19:13:08.991Z",
+  "updatedAt": "2026-10-06T22:24:53.322Z",
   "players": [
+    {
+      "id": "patricio-urdinez",
+      "name": "Patricio Urdinez",
+      "zone": "A"
+    },
     {
       "id": "juan-pablo-gonzalez",
       "name": "Juan Pablo Gonzalez",
@@ -24,18 +29,13 @@
       "zone": "A"
     },
     {
-      "id": "patricio-urdinez",
-      "name": "Patricio Urdinez",
+      "id": "ariel-kosakoff",
+      "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
       "id": "roberto-ali",
       "name": "Roberto Ali",
-      "zone": "A"
-    },
-    {
-      "id": "ariel-kosakoff",
-      "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
@@ -77,6 +77,13 @@
   "standings": {
     "A": [
       {
+        "name": "Patricio Urdinez",
+        "played": 1,
+        "setsWon": 2,
+        "setsLost": 0,
+        "points": 2
+      },
+      {
         "name": "Juan Pablo Gonzalez",
         "played": 1,
         "setsWon": 2,
@@ -105,24 +112,17 @@
         "points": 0
       },
       {
-        "name": "Patricio Urdinez",
-        "played": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
-      },
-      {
-        "name": "Roberto Ali",
-        "played": 1,
-        "setsWon": 0,
-        "setsLost": 2,
-        "points": 0
-      },
-      {
         "name": "Ariel Kosakoff",
         "played": 1,
         "setsWon": 0,
         "setsLost": 2,
+        "points": 0
+      },
+      {
+        "name": "Roberto Ali",
+        "played": 2,
+        "setsWon": 0,
+        "setsLost": 4,
         "points": 0
       }
     ],
@@ -218,8 +218,23 @@
       "week": 1,
       "p1": "Roberto Ali",
       "p2": "Patricio Urdinez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          0,
+          6
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      }
     },
     {
       "id": "A-andres-d-ambrosio-vs-ariel-kosakoff",
@@ -422,8 +437,23 @@
       "week": 1,
       "p1": "Fernando Alberti",
       "p2": "Matias Tini",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          7
+        ],
+        [
+          3,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      }
     },
     {
       "id": "B-federico-mencarini-vs-matias-tini",
