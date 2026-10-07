@@ -1,6 +1,6 @@
 // Descarga el Google Sheet del torneo y regenera data/tournament.json.
 // Uso: npm run sync
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { parseStandings, parseFixture, slug } from '../src/sheet.js';
 
 const SHEET_ID = '1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU';
@@ -29,10 +29,17 @@ for (const zone of ['A', 'B']) {
   if (got !== expected) console.warn(`⚠️  Zona ${zone}: ${got} partidos en el fixture, se esperaban ${expected}`);
 }
 
+// La planilla no tiene fechas: guardamos cuándo apareció cada resultado por primera vez
+// (`firstSeen`) para poder ordenar "últimos resultados" por orden real de carga.
+const previous = await readFile(OUT, 'utf8').then(JSON.parse).catch(() => null);
+const seenBefore = Object.fromEntries((previous?.matches ?? []).filter(m => m.result && m.firstSeen).map(m => [m.id, m.firstSeen]));
+const now = new Date().toISOString();
+for (const m of matches) if (m.result) m.firstSeen = seenBefore[m.id] ?? now;
+
 const data = {
   name: 'Single Oct-Nov',
   source: `https://docs.google.com/spreadsheets/d/${SHEET_ID}`,
-  updatedAt: new Date().toISOString(),
+  updatedAt: now,
   players,
   standings,
   matches,

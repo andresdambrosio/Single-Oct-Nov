@@ -25,6 +25,8 @@ const played = data.matches.filter(m => m.result);
 const pending = data.matches.filter(m => !m.result).sort((a, b) => a.week - b.week);
 
 // Sets desde el punto de vista del ganador: "6-4 6-2".
+// Más reciente primero según cuándo apareció en la planilla; si empatan, la semana del fixture.
+const byRecent = (a, b) => (b.firstSeen ?? '').localeCompare(a.firstSeen ?? '') || b.week - a.week;
 const winnerSets = m => m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ');
 const winnerOf = m => (m.result.winner === 1 ? m.p1 : m.p2);
 const loserOf = m => (m.result.winner === 1 ? m.p2 : m.p1);
@@ -46,7 +48,7 @@ function renderHome() {
   const total = data.matches.length;
   const nextWeek = pending[0]?.week;
   const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 4);
-  const lastResults = [...played].sort((a, b) => b.week - a.week).slice(0, 5);
+  const lastResults = [...played].sort(byRecent).slice(0, 5);
   const fav = data.players.map(p => ({ ...p, p: sim[p.name].champion })).sort((a, b) => b.p - a.p)[0];
   const leaders = ['A', 'B'].map(z => {
     const rows = standings(data.players, data.matches, z).slice(0, 4);
@@ -105,7 +107,7 @@ function renderTable() {
 
 // Partidos: primero los resultados (más recientes arriba), después lo que falta por semana.
 function renderMatches() {
-  const results = [...played].sort((a, b) => b.week - a.week);
+  const results = [...played].sort(byRecent);
   const weeks = [...new Set(pending.map(m => m.week))];
   return `<section><h2>Resultados <span class="muted">· ${played.length} de ${data.matches.length}</span></h2>
     ${results.length ? `<div class="grid">${results.map(resultCard).join('')}</div>` : '<p class="muted">Todavía no hay partidos jugados.</p>'}</section>

@@ -201,7 +201,8 @@
         "setsP2": 2,
         "pointsP1": 0,
         "pointsP2": 2
-      }
+      },
+      "firstSeen": "2026-10-05T19:13:10.000Z"
     },
     {
       "id": "A-hugo-lopez-vs-patricio-poleri",
@@ -234,7 +235,8 @@
         "setsP2": 2,
         "pointsP1": 0,
         "pointsP2": 2
-      }
+      },
+      "firstSeen": "2026-10-06T22:25:01.000Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-ariel-kosakoff",
@@ -375,7 +377,8 @@
         "setsP2": 0,
         "pointsP1": 2,
         "pointsP2": 0
-      }
+      },
+      "firstSeen": "2026-10-05T00:12:00.000Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-juan-pablo-gonzalez",
@@ -453,7 +456,8 @@
         "setsP2": 2,
         "pointsP1": 0,
         "pointsP2": 2
-      }
+      },
+      "firstSeen": "2026-10-06T22:25:01.000Z"
     },
     {
       "id": "B-federico-mencarini-vs-matias-tini",
