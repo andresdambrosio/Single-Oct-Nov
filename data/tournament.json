@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-06T22:24:53.322Z",
+  "updatedAt": "2026-10-07T04:04:24.952Z",
   "players": [
     {
       "id": "patricio-urdinez",
@@ -39,8 +39,8 @@
       "zone": "A"
     },
     {
-      "id": "fernando-alberti",
-      "name": "Fernando Alberti",
+      "id": "matias-tini",
+      "name": "Matias Tini",
       "zone": "B"
     },
     {
@@ -64,13 +64,13 @@
       "zone": "B"
     },
     {
-      "id": "matias-tini",
-      "name": "Matias Tini",
+      "id": "dionisio-alvarez",
+      "name": "Dionisio Alvarez",
       "zone": "B"
     },
     {
-      "id": "dionisio-alvarez",
-      "name": "Dionisio Alvarez",
+      "id": "fernando-alberti",
+      "name": "Fernando Alberti",
       "zone": "B"
     }
   ],
@@ -128,11 +128,11 @@
     ],
     "B": [
       {
-        "name": "Fernando Alberti",
-        "played": 0,
-        "setsWon": 0,
+        "name": "Matias Tini",
+        "played": 1,
+        "setsWon": 2,
         "setsLost": 0,
-        "points": 0
+        "points": 2
       },
       {
         "name": "Miguel Mendes",
@@ -163,17 +163,17 @@
         "points": 0
       },
       {
-        "name": "Matias Tini",
+        "name": "Dionisio Alvarez",
         "played": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
       },
       {
-        "name": "Dionisio Alvarez",
-        "played": 0,
+        "name": "Fernando Alberti",
+        "played": 1,
         "setsWon": 0,
-        "setsLost": 0,
+        "setsLost": 2,
         "points": 0
       }
     ]
