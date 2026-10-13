@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-12T00:49:31.167Z",
+  "updatedAt": "2026-10-13T01:43:20.754Z",
   "players": [
     {
       "id": "patricio-urdinez",
@@ -79,21 +79,21 @@
       {
         "name": "Patricio Urdinez",
         "played": 1,
-        "setsWon": 2,
+        "setsWon": 1,
         "setsLost": 0,
         "points": 2
       },
       {
         "name": "Juan Pablo Gonzalez",
         "played": 1,
-        "setsWon": 2,
+        "setsWon": 1,
         "setsLost": 0,
         "points": 2
       },
       {
         "name": "Patricio Poleri",
         "played": 1,
-        "setsWon": 2,
+        "setsWon": 1,
         "setsLost": 0,
         "points": 2
       },
@@ -115,14 +115,14 @@
         "name": "Ariel Kosakoff",
         "played": 1,
         "setsWon": 0,
-        "setsLost": 2,
+        "setsLost": 1,
         "points": 0
       },
       {
         "name": "Roberto Ali",
         "played": 2,
         "setsWon": 0,
-        "setsLost": 4,
+        "setsLost": 2,
         "points": 0
       }
     ],
@@ -130,14 +130,14 @@
       {
         "name": "Axel Lehmann",
         "played": 1,
-        "setsWon": 2,
+        "setsWon": 1,
         "setsLost": 0,
         "points": 2
       },
       {
         "name": "Matias Tini",
         "played": 1,
-        "setsWon": 2,
+        "setsWon": 1,
         "setsLost": 0,
         "points": 2
       },
@@ -166,14 +166,14 @@
         "name": "Fernando Alberti",
         "played": 1,
         "setsWon": 0,
-        "setsLost": 2,
+        "setsLost": 1,
         "points": 0
       },
       {
         "name": "Miguel Mendes",
         "played": 1,
         "setsWon": 0,
-        "setsLost": 2,
+        "setsLost": 1,
         "points": 0
       }
     ]
