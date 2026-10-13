@@ -32,6 +32,13 @@ test('parseStandings separa las dos zonas', () => {
   assert.equal(s.B[0].name, 'Caro');
 });
 
+test('parseStandings lee las columnas por nombre aunque la planilla agregue columnas', () => {
+  const before = 'Jugador,Q Partidos,Sets Ganados,Sets Perdidos,Puntos\nAna,2,4,1,4\n';
+  const after = 'Jugador,Q Partidos,Par Ganados,Par Perdidos,Sets Ganados,Sets Perdidos,Puntos\nAna,2,2,0,4,1,4\n';
+  assert.deepEqual(parseStandings(before).A[0], { name: 'Ana', played: 2, setsWon: 4, setsLost: 1, points: 4 });
+  assert.deepEqual(parseStandings(after).A[0], { name: 'Ana', played: 2, won: 2, lost: 0, setsWon: 4, setsLost: 1, points: 4 });
+});
+
 test('el fixture sincronizado es todos-contra-todos en cada zona', () => {
   for (const zone of ['A', 'B']) {
     const names = data.players.filter(p => p.zone === zone).map(p => p.name);

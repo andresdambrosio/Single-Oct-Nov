@@ -27,15 +27,34 @@ export const slug = name =>
   name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 // Hoja "Posiciones": dos bloques que empiezan con la fila "Jugador,...". El primero es Zona A.
+// Las columnas se buscan por nombre en esa fila, porque la planilla fue sumando columnas
+// (ej. "Par Ganados" / "Par Perdidos") y las posiciones no son fijas.
+const STANDINGS_COLUMNS = {
+  played: /partidos/i,
+  won: /par\w* ganados/i,
+  lost: /par\w* perdidos/i,
+  setsWon: /sets ganados/i,
+  setsLost: /sets perdidos/i,
+  points: /puntos/i,
+};
+
 export function parseStandings(csv) {
   const rows = parseCsv(csv);
   const zones = [];
   let current = null;
+  let cols = null;
   for (const r of rows) {
-    if (r[0] === 'Jugador') { current = []; zones.push(current); continue; }
+    if (r[0] === 'Jugador') {
+      cols = Object.fromEntries(Object.entries(STANDINGS_COLUMNS).map(([key, re]) => [key, r.findIndex(h => re.test(h))]));
+      current = [];
+      zones.push(current);
+      continue;
+    }
     if (!r[0]) { current = null; continue; }
     if (!current) continue;
-    current.push({ name: r[0], played: +r[1] || 0, setsWon: +r[2] || 0, setsLost: +r[3] || 0, points: +r[4] || 0 });
+    const row = { name: r[0] };
+    for (const [key, i] of Object.entries(cols)) if (i >= 0) row[key] = +r[i] || 0;
+    current.push(row);
   }
   return { A: zones[0] ?? [], B: zones[1] ?? [] };
 }
