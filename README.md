@@ -16,13 +16,20 @@ Resultados, tabla y ranking de un torneo amateur de singles.
 
 ## Modelo de probabilidades
 
-- Todos arrancan con **1500 de rating**, o sea 50% de chances contra cualquiera.
-- Después de cada partido se aplica Elo (K = 48): el ganador le saca puntos al perdedor, y saca más
-  cuanto menos esperado era el resultado. Ganar 2-0 pesa ×1.25 y ganar 2-1, ×0.85.
-- P(A gana) = 1 / (1 + 10^((R_B − R_A)/400)).
-- Para el resultado exacto se busca la probabilidad de ganar un set `s` tal que s²(3 − 2s) = P(A gana).
-- Clasificar y campeón: 20.000 simulaciones Monte Carlo con semilla fija, usando el cuadro de la hoja "Reglas"
-  (1A–4B, 2B–3A, 1B–4A, 2A–3B).
+**Ranking (Bradley-Terry sobre games, retroactivo).** Cada jugador tiene una fuerza `x`; la chance de ganar un game
+contra otro es `σ(x_a − x_b)`. Las fuerzas se estiman con *todos* los partidos a la vez (máximo a posteriori), así que
+no importa el orden en que se jugaron y ganarle a alguien que después rinde bien vale más (la idea de PageRank).
+- Se usan los **games** de cada set: un 6-0 6-0 pesa más que un 7-6 7-6. El super tie-break cuenta como un game.
+- **Prior** gaussiano (desvío 0,3) centrado en el promedio: todos arrancan iguales y quien jugó poco se mueve con prudencia.
+- Los games de un mismo partido no son independientes, así que cada uno pesa 0,4.
+- El rating se muestra en escala tipo Elo: `1500 + 400·log10(p / (1 − p))`, con `p` = chance de ganarle el partido a un jugador promedio.
+
+**De games a partido.** De la chance de game se despeja la de punto (puntos independientes, sin distinguir saque) y con eso
+se calcula exacto: set a 6 con tie-break a 7, super tie-break a 10 y partido al mejor de 3 con super tie-break.
+
+**Clasificar y campeón.** 20.000 simulaciones Monte Carlo con semilla fija del resto de la zona y del cuadro de la hoja "Reglas"
+(1A–4B, 2B–3A, 1B–4A, 2A–3B). En cada simulación se sortea el nivel de cada jugador dentro de su incertidumbre
+(aproximación de Laplace), así quien jugó un solo partido no queda como favorito seguro.
 
 Todo está en [`src/model.js`](src/model.js).
 

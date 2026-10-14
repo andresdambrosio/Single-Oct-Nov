@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFixture, parseStandings, summarize } from '../src/sheet.js';
-import { computeRatings, matchMarkets, scoreProbs, simulateTournament, standings, winProb } from '../src/model.js';
+import { computeRatings, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
 test('summarize aplica el reglamento de puntos', () => {
@@ -54,18 +54,50 @@ test('matchMarkets: probabilidades de ganador suman 1', () => {
 });
 
 test('las probabilidades de resultado exacto suman la de ganar', () => {
-  const p = 0.63;
-  const s = scoreProbs(p);
-  assert.ok(Math.abs(s['2-0'] + s['2-1'] - p) < 1e-6);
+  const s = scoreProbs(1600, 1450);
+  assert.ok(Math.abs(s['2-0'] + s['2-1'] - winProb(1600, 1450)) < 1e-9);
   assert.ok(Math.abs(Object.values(s).reduce((a, b) => a + b) - 1) < 1e-9);
+});
+
+test('tenis de manual: parejos es 50% y ganar más games da más chance de partido', () => {
+  assert.ok(Math.abs(raceProb(0.5, 4) - 0.5) < 1e-12);
+  assert.ok(Math.abs(raceProb(0.5, 10) - 0.5) < 1e-12);
+  assert.ok(Math.abs(matchFromGameEdge(0).p - 0.5) < 1e-9);
+  const a = matchFromGameEdge(0.2).p, b = matchFromGameEdge(0.4).p;
+  assert.ok(a > 0.5 && b > a && b < 1);
+  assert.ok(Math.abs(matchFromGameEdge(-0.4).p - (1 - b)) < 1e-9);
+});
+
+const P3 = ['Ana', 'Bea', 'Caro', 'Dani'].map(name => ({ name, zone: 'A' }));
+const match = (id, p1, p2, sets, week = 1) => ({ id, zone: 'A', week, p1, p2, sets, result: summarize(sets) });
+
+test('el ranking cuenta los games: 6-0 6-0 vale más que 7-6 7-6', () => {
+  const big = computeRatings(P3, [match('m', 'Ana', 'Bea', [[6, 0], [6, 0]])]);
+  const close = computeRatings(P3, [match('m', 'Ana', 'Bea', [[7, 6], [7, 6]])]);
+  assert.ok(big.Ana > close.Ana && close.Ana > 1500);
+  assert.ok(big.Bea < close.Bea && close.Bea < 1500);
+});
+
+test('el ranking es retroactivo y no depende del orden de los partidos', () => {
+  // Ana y Caro le ganan igual a Bea, pero a Bea después le gana Dani: no cambia nada entre Ana y Caro.
+  // En cambio, si el rival de Ana después gana, la victoria de Ana vale más que la de Caro.
+  const ms = [
+    match('1', 'Ana', 'Bea', [[6, 3], [6, 3]], 1),
+    match('2', 'Caro', 'Dani', [[6, 3], [6, 3]], 2),
+    match('3', 'Bea', 'Dani', [[6, 2], [6, 2]], 3),
+  ];
+  const r = computeRatings(P3, ms);
+  assert.ok(r.Ana > r.Caro, 'ganarle a quien después gana vale más');
+  const reversed = computeRatings(P3, ms.map((m, i) => ({ ...m, week: 10 - i })).reverse());
+  for (const p of P3) assert.ok(Math.abs(r[p.name] - reversed[p.name]) < 1e-6);
 });
 
 test('ganar sube el rating y la tabla calcula puntos', () => {
   // Datos fijos (no la planilla real, que cambia con cada resultado).
   const players = ['Ana', 'Bea', 'Caro'].map(name => ({ name, zone: 'A' }));
   const matches = [
-    { id: 'm1', zone: 'A', week: 1, p1: 'Ana', p2: 'Bea', result: summarize([[6, 3], [6, 4]]) },
-    { id: 'm2', zone: 'A', week: 2, p1: 'Caro', p2: 'Bea', result: summarize([[6, 3], [3, 6], [10, 8]]) },
+    { id: 'm1', zone: 'A', week: 1, p1: 'Ana', p2: 'Bea', sets: [[6, 3], [6, 4]], result: summarize([[6, 3], [6, 4]]) },
+    { id: 'm2', zone: 'A', week: 2, p1: 'Caro', p2: 'Bea', sets: [[6, 3], [3, 6], [10, 8]], result: summarize([[6, 3], [3, 6], [10, 8]]) },
   ];
   const r = computeRatings(players, matches);
   assert.ok(r.Ana > 1500 && r.Bea < 1500);
@@ -78,7 +110,7 @@ test('la simulación reparte 100% de probabilidad de campeón', () => {
   let seed = 1;
   const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const r = computeRatings(data.players, data.matches);
-  const sim = simulateTournament(data.players, data.matches, r, 300, rng);
+  const sim = simulateTournament(data.players, data.matches, 300, rng);
   const total = Object.values(sim).reduce((a, v) => a + v.champion, 0);
   assert.ok(Math.abs(total - 1) < 1e-9);
   const qualified = Object.values(sim).reduce((a, v) => a + v.qualify, 0);
@@ -96,7 +128,7 @@ test('sin resultados, todos los de una zona tienen la misma chance de clasificar
   const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const fresh = data.matches.map(m => ({ ...m, result: null }));
   const r = computeRatings(data.players, fresh);
-  const sim = simulateTournament(data.players, fresh, r, 20000, rng);
+  const sim = simulateTournament(data.players, fresh, 20000, rng);
   const expected = 4 / 7;
   for (const p of data.players) assert.ok(Math.abs(sim[p.name].qualify - expected) < 0.015, `${p.name}: ${sim[p.name].qualify}`);
 });

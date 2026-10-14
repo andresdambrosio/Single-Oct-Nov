@@ -1,4 +1,4 @@
-import { computeRatings, matchMarkets, ranking, simulateTournament, standings, winProb } from './model.js';
+import { computeRatings, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, winProb } from './model.js';
 
 const $ = sel => document.querySelector(sel);
 const fmt = n => Math.round(n).toLocaleString('es-AR');
@@ -14,7 +14,7 @@ const ratings = computeRatings(data.players, data.matches);
 let seed = 20261004;
 const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const SIM_RUNS = 20000;
-const sim = simulateTournament(data.players, data.matches, ratings, SIM_RUNS, rng);
+const sim = simulateTournament(data.players, data.matches, SIM_RUNS, rng);
 
 const rank = ranking(data.players, data.matches);
 // Empates comparten posición (ej. todos en 1500 al arrancar).
@@ -77,7 +77,7 @@ function renderHome() {
     <section class="panel wide"><h3>Tabla <span class="muted">· clasifican 4 por zona</span></h3>
       <div class="two-col">${leaders}</div>
       <a class="more" href="#" data-goto="table">Ver la tabla completa →</a></section>
-    <section class="panel"><h3>Ranking Elo</h3>
+    <section class="panel"><h3>Ranking</h3>
       <ol class="list">${rank.slice(0, 5).map(r => `<li><span class="pos">${r.position}</span>${playerLink(r.name)}<span class="muted">${fmt(r.rating)}</span></li>`).join('')}</ol>
       <a class="more" href="#" data-goto="ranking">Ver ranking completo →</a></section>
     ${upcoming.length ? `<section class="panel wide"><h3>Próximos partidos <span class="muted">· semana ${nextWeek}</span></h3>
@@ -149,9 +149,10 @@ function renderOutlook() {
 
 function renderRanking() {
   const opts = rank.map(r => `<option>${esc(r.name)}</option>`).join('');
-  return `<section><h2>Ranking Elo</h2>
-    <p class="muted">Todos arrancan con 1500 puntos (50% de chances contra cualquiera). Cada partido
-    pasa puntos del perdedor al ganador; cuanto más inesperado el resultado, más puntos. Ganar 2-0 vale más que 2-1.</p>
+  return `<section><h2>Ranking</h2>
+    <p class="muted">Todos arrancan con 1500 (50% contra cualquiera). Se recalcula con todos los partidos juntos:
+    cuenta a quién le ganaste y por cuántos games, y ganarle a alguien que después rinde bien vale más.
+    <a href="#h-rank">Cómo se calcula</a></p>
     <div class="table-wrap"><table class="rank">
       <thead><tr><th>#</th><th>Jugador</th><th>Zona</th><th>PJ</th><th>Rating</th><th>±</th><th title="Probabilidad de ganarle a un jugador promedio">vs. promedio</th></tr></thead>
       <tbody>${rank.map(r => `<tr>
@@ -211,12 +212,18 @@ function renderPlayer(p) {
     <section><h2>Partidos</h2><ul class="fixture">${ms.map(line).join('')}</ul></section>`;
 }
 
+// Ejemplos de la ayuda: rating de alguien después de un único partido contra un rival sin otros partidos.
+const EXAMPLES = [['6-0 6-0', [[6, 0], [6, 0]]], ['6-2 6-3', [[6, 2], [6, 3]]], ['7-6 6-4', [[7, 6], [6, 4]]], ['6-4 4-6 10-8', [[6, 4], [4, 6], [10, 8]]]];
+function exampleRating(sets) {
+  const players = [{ name: 'a', zone: 'A' }, { name: 'b', zone: 'A' }];
+  return computeRatings(players, [{ id: 'x', zone: 'A', week: 1, p1: 'a', p2: 'b', sets, result: { winner: 1 } }]).a;
+}
+
 // Página explicativa. Los ejemplos usan las fórmulas reales del modelo para no desactualizarse.
 function renderHelp() {
-  const eloDelta = (ra, rb, dominance) => 48 * dominance * (1 - winProb(ra, rb));
   return `<article class="help">
   <nav class="toc">
-    <a href="#h-tabla">Tabla</a><a href="#h-elo">Ranking Elo</a><a href="#h-prob">Probabilidades</a><a href="#h-datos">Datos</a>
+    <a href="#h-tabla">Tabla</a><a href="#h-rank">Ranking</a><a href="#h-prob">Probabilidades</a><a href="#h-datos">Datos</a>
   </nav>
 
   <section id="h-tabla"><h2>📋 La tabla</h2>
@@ -228,26 +235,32 @@ function renderHelp() {
       <li>Los 4 primeros de cada zona pasan a cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.</li>
     </ul></section>
 
-  <section id="h-elo"><h2>📊 El ranking Elo</h2>
-    <p>Es el mismo sistema que se usa en ajedrez: mide el nivel de cada jugador según a quién le ganó y a quién no.</p>
+  <section id="h-rank"><h2>📊 El ranking</h2>
+    <p>Mide el nivel de cada jugador con <strong>todos los partidos a la vez</strong>, parecido a cómo PageRank ordena páginas:
+    no importa sólo cuántos partidos ganaste, sino <strong>a quién</strong> y <strong>por cuánto</strong>.</p>
     <ul>
-      <li>Todos arrancan con <strong>1500 puntos</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
-      <li>En cada partido el ganador <strong>le saca puntos al perdedor</strong>.</li>
-      <li>Cuanto <strong>más inesperado</strong> el resultado, más puntos se mueven. Ganarle al favorito vale mucho; ganarle al último, poco.</li>
-      <li>Ganar <strong>2-0</strong> mueve más que ganar <strong>2-1</strong>.</li>
+      <li>Todos arrancan con <strong>1500</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
+      <li>Se mira <strong>cada game</strong>: un 6-0 6-1 dice mucho más que un 7-6 7-6. El super tie-break cuenta como un game para el que lo gana.</li>
+      <li>Es <strong>retroactivo</strong>: si le ganaste a alguien que después le gana a todos, tu victoria vale más. Y no importa en qué orden se jugaron los partidos.</li>
+      <li>Con <strong>pocos partidos el rating se mueve con prudencia</strong>: un solo resultado no te manda arriba de todo. A medida que jugás, pesan más tus resultados.</li>
     </ul>
+    <p>Así queda alguien que jugó un solo partido contra un rival que no jugó otros:</p>
     <div class="table-wrap"><table>
-      <thead><tr><th>Partido</th><th>Ganando 2-0</th><th>Ganando 2-1</th></tr></thead>
-      <tbody>
-        <tr><td>Parejos (1500 vs 1500)</td><td>±${fmt(eloDelta(1500, 1500, 1.25))}</td><td>±${fmt(eloDelta(1500, 1500, 0.85))}</td></tr>
-        <tr><td>El favorito gana (1560 vs 1440)</td><td>±${fmt(eloDelta(1560, 1440, 1.25))}</td><td>±${fmt(eloDelta(1560, 1440, 0.85))}</td></tr>
-        <tr><td>Sorpresa: gana el de 1440 contra 1560</td><td>±${fmt(eloDelta(1440, 1560, 1.25))}</td><td>±${fmt(eloDelta(1440, 1560, 0.85))}</td></tr>
-      </tbody></table></div>
-    <p>La probabilidad de que A le gane a B es <code>1 / (1 + 10<sup>(B − A) / 400</sup>)</code>. Por ejemplo, 100 puntos de diferencia ≈ ${pct(winProb(1600, 1500))} para el de arriba.</p>
-    <p class="muted">El Elo es independiente de la tabla: la tabla usa los puntos del reglamento.</p></section>
+      <thead><tr><th>Ganó</th><th>Rating</th><th>Chance vs. promedio</th></tr></thead>
+      <tbody>${EXAMPLES.map(([label, sets]) => {
+        const r = exampleRating(sets);
+        return `<tr><td>${label}</td><td>${fmt(r)}</td><td>${pct(winProb(r, 1500))}</td></tr>`;
+      }).join('')}</tbody></table></div>
+    <p>El rating se muestra en escala tipo Elo: 100 puntos de diferencia ≈ ${pct(winProb(1600, 1500))} de chance para el de arriba.</p>
+    <p class="muted">El ranking es independiente de la tabla: la tabla usa los puntos del reglamento.</p></section>
 
   <section id="h-prob"><h2>🔮 Probabilidades</h2>
-    <p>En cada partido por jugar se muestra la chance de cada uno según el Elo, y en "Resultado más probable" la chance de cada marcador en sets.</p>
+    <p>De la diferencia de ranking sale la chance de ganar cada <strong>game</strong>. Con eso se calcula, con las reglas del torneo,
+    la de ganar un set (con tie-break), el super tie-break a 10 y el partido. Ganar algunos games más que el rival se transforma en mucha ventaja en el partido:</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Chance de ganar cada game</th><th>Chance de ganar el partido</th></tr></thead>
+      <tbody>${[0.52, 0.55, 0.6, 0.65].map(g => `<tr><td>${pct(g)}</td><td>${pct(matchFromGameEdge(Math.log(g / (1 - g))).p)}</td></tr>`).join('')}</tbody></table></div>
+    <p>En cada partido por jugar se muestra la chance de cada uno, y en "Resultado más probable" la de cada marcador en sets.</p>
     <p>Para "Clasifica" y "Campeón", el sitio <strong>simula ${fmt(SIM_RUNS)} veces</strong> el resto del torneo: los partidos de zona que faltan
     y después cuartos, semis y final. Si alguien sale campeón en ${fmt(SIM_RUNS / 10)} de las ${fmt(SIM_RUNS)} simulaciones, tiene 10%.</p>
     <p class="muted">Es un modelo simple que sólo mira los resultados de este torneo. Es para divertirse, no lo tomes muy en serio 😅</p></section>
