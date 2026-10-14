@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-13T03:44:53.458Z",
+  "updatedAt": "2026-10-14T01:25:53.324Z",
   "players": [
     {
       "id": "patricio-urdinez",
@@ -19,8 +19,8 @@
       "zone": "A"
     },
     {
-      "id": "hugo-lopez",
-      "name": "Hugo Lopez",
+      "id": "roberto-ali",
+      "name": "Roberto Ali",
       "zone": "A"
     },
     {
@@ -29,23 +29,23 @@
       "zone": "A"
     },
     {
+      "id": "hugo-lopez",
+      "name": "Hugo Lopez",
+      "zone": "A"
+    },
+    {
       "id": "ariel-kosakoff",
       "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
-      "id": "roberto-ali",
-      "name": "Roberto Ali",
-      "zone": "A"
+      "id": "matias-tini",
+      "name": "Matias Tini",
+      "zone": "B"
     },
     {
       "id": "axel-lehmann",
       "name": "Axel Lehmann",
-      "zone": "B"
-    },
-    {
-      "id": "matias-tini",
-      "name": "Matias Tini",
       "zone": "B"
     },
     {
@@ -79,8 +79,6 @@
       {
         "name": "Patricio Urdinez",
         "played": 1,
-        "won": 1,
-        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
@@ -88,8 +86,6 @@
       {
         "name": "Juan Pablo Gonzalez",
         "played": 1,
-        "won": 1,
-        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
@@ -97,26 +93,27 @@
       {
         "name": "Patricio Poleri",
         "played": 1,
-        "won": 1,
-        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
       },
       {
-        "name": "Hugo Lopez",
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
+        "name": "Roberto Ali",
+        "played": 3,
+        "setsWon": 2,
+        "setsLost": 5,
+        "points": 2
       },
       {
         "name": "Andres D'Ambrosio",
+        "played": 1,
+        "setsWon": 1,
+        "setsLost": 2,
+        "points": 1
+      },
+      {
+        "name": "Hugo Lopez",
         "played": 0,
-        "won": 0,
-        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
@@ -124,55 +121,36 @@
       {
         "name": "Ariel Kosakoff",
         "played": 1,
-        "won": 0,
-        "lost": 1,
         "setsWon": 0,
         "setsLost": 2,
-        "points": 0
-      },
-      {
-        "name": "Roberto Ali",
-        "played": 2,
-        "won": 0,
-        "lost": 2,
-        "setsWon": 0,
-        "setsLost": 4,
         "points": 0
       }
     ],
     "B": [
       {
-        "name": "Axel Lehmann",
-        "played": 1,
-        "won": 1,
-        "lost": 0,
-        "setsWon": 2,
-        "setsLost": 0,
-        "points": 2
+        "name": "Matias Tini",
+        "played": 2,
+        "setsWon": 3,
+        "setsLost": 2,
+        "points": 3
       },
       {
-        "name": "Matias Tini",
+        "name": "Axel Lehmann",
         "played": 1,
-        "won": 1,
-        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
       },
       {
         "name": "Fernando Uriarte",
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
+        "played": 1,
+        "setsWon": 2,
+        "setsLost": 1,
+        "points": 2
       },
       {
         "name": "Federico Mencarini",
         "played": 0,
-        "won": 0,
-        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
@@ -180,8 +158,6 @@
       {
         "name": "Dionisio Alvarez",
         "played": 0,
-        "won": 0,
-        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
@@ -189,8 +165,6 @@
       {
         "name": "Fernando Alberti",
         "played": 1,
-        "won": 0,
-        "lost": 1,
         "setsWon": 0,
         "setsLost": 2,
         "points": 0
@@ -198,8 +172,6 @@
       {
         "name": "Miguel Mendes",
         "played": 1,
-        "won": 0,
-        "lost": 1,
         "setsWon": 0,
         "setsLost": 2,
         "points": 0
@@ -299,8 +271,28 @@
       "week": 3,
       "p1": "Roberto Ali",
       "p2": "Andres D'Ambrosio",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          4
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          12,
+          10
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 1,
+        "pointsP1": 2,
+        "pointsP2": 1
+      },
+      "firstSeen": "2026-10-14T01:25:53.324Z"
     },
     {
       "id": "A-juan-pablo-gonzalez-vs-patricio-poleri",
@@ -572,8 +564,28 @@
       "week": 4,
       "p1": "Fernando Uriarte",
       "p2": "Matias Tini",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          4,
+          6
+        ],
+        [
+          6,
+          4
+        ],
+        [
+          10,
+          2
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 1,
+        "pointsP1": 2,
+        "pointsP2": 1
+      },
+      "firstSeen": "2026-10-14T01:25:53.324Z"
     },
     {
       "id": "B-axel-lehmann-vs-federico-mencarini",
