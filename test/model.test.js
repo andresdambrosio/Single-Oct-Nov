@@ -37,6 +37,8 @@ test('parseStandings lee las columnas por nombre aunque la planilla agregue colu
   const after = 'Jugador,Q Partidos,Par Ganados,Par Perdidos,Sets Ganados,Sets Perdidos,Puntos\nAna,2,2,0,4,1,4\n';
   assert.deepEqual(parseStandings(before).A[0], { name: 'Ana', played: 2, setsWon: 4, setsLost: 1, points: 4 });
   assert.deepEqual(parseStandings(after).A[0], { name: 'Ana', played: 2, won: 2, lost: 0, setsWon: 4, setsLost: 1, points: 4 });
+  const renamed = after.replace('Par Ganados,Par Perdidos', 'P Ganados,P Perdidos');
+  assert.deepEqual(parseStandings(renamed).A[0], parseStandings(after).A[0]);
 });
 
 test('el fixture sincronizado es todos-contra-todos en cada zona', () => {

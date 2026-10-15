@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-14T01:25:53.324Z",
+  "updatedAt": "2026-10-15T16:27:30.138Z",
   "players": [
     {
       "id": "patricio-urdinez",
@@ -19,6 +19,11 @@
       "zone": "A"
     },
     {
+      "id": "ariel-kosakoff",
+      "name": "Ariel Kosakoff",
+      "zone": "A"
+    },
+    {
       "id": "roberto-ali",
       "name": "Roberto Ali",
       "zone": "A"
@@ -31,11 +36,6 @@
     {
       "id": "hugo-lopez",
       "name": "Hugo Lopez",
-      "zone": "A"
-    },
-    {
-      "id": "ariel-kosakoff",
-      "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
@@ -79,6 +79,8 @@
       {
         "name": "Patricio Urdinez",
         "played": 1,
+        "won": 1,
+        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
@@ -86,6 +88,8 @@
       {
         "name": "Juan Pablo Gonzalez",
         "played": 1,
+        "won": 1,
+        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
@@ -93,36 +97,46 @@
       {
         "name": "Patricio Poleri",
         "played": 1,
+        "won": 1,
+        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
       },
       {
+        "name": "Ariel Kosakoff",
+        "played": 2,
+        "won": 1,
+        "lost": 1,
+        "setsWon": 2,
+        "setsLost": 2,
+        "points": 2
+      },
+      {
         "name": "Roberto Ali",
         "played": 3,
+        "won": 1,
+        "lost": 2,
         "setsWon": 2,
         "setsLost": 5,
         "points": 2
       },
       {
         "name": "Andres D'Ambrosio",
-        "played": 1,
+        "played": 2,
+        "won": 0,
+        "lost": 2,
         "setsWon": 1,
-        "setsLost": 2,
+        "setsLost": 4,
         "points": 1
       },
       {
         "name": "Hugo Lopez",
         "played": 0,
+        "won": 0,
+        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
-        "points": 0
-      },
-      {
-        "name": "Ariel Kosakoff",
-        "played": 1,
-        "setsWon": 0,
-        "setsLost": 2,
         "points": 0
       }
     ],
@@ -130,6 +144,8 @@
       {
         "name": "Matias Tini",
         "played": 2,
+        "won": 1,
+        "lost": 1,
         "setsWon": 3,
         "setsLost": 2,
         "points": 3
@@ -137,6 +153,8 @@
       {
         "name": "Axel Lehmann",
         "played": 1,
+        "won": 1,
+        "lost": 0,
         "setsWon": 2,
         "setsLost": 0,
         "points": 2
@@ -144,6 +162,8 @@
       {
         "name": "Fernando Uriarte",
         "played": 1,
+        "won": 1,
+        "lost": 0,
         "setsWon": 2,
         "setsLost": 1,
         "points": 2
@@ -151,6 +171,8 @@
       {
         "name": "Federico Mencarini",
         "played": 0,
+        "won": 0,
+        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
@@ -158,6 +180,8 @@
       {
         "name": "Dionisio Alvarez",
         "played": 0,
+        "won": 0,
+        "lost": 0,
         "setsWon": 0,
         "setsLost": 0,
         "points": 0
@@ -165,6 +189,8 @@
       {
         "name": "Fernando Alberti",
         "played": 1,
+        "won": 0,
+        "lost": 1,
         "setsWon": 0,
         "setsLost": 2,
         "points": 0
@@ -172,6 +198,8 @@
       {
         "name": "Miguel Mendes",
         "played": 1,
+        "won": 0,
+        "lost": 1,
         "setsWon": 0,
         "setsLost": 2,
         "points": 0
@@ -244,8 +272,24 @@
       "week": 2,
       "p1": "Ariel Kosakoff",
       "p2": "Andres D'Ambrosio",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          0
+        ],
+        [
+          7,
+          5
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-10-15T16:26:44.112Z"
     },
     {
       "id": "A-patricio-poleri-vs-patricio-urdinez",

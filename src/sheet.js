@@ -28,11 +28,12 @@ export const slug = name =>
 
 // Hoja "Posiciones": dos bloques que empiezan con la fila "Jugador,...". El primero es Zona A.
 // Las columnas se buscan por nombre en esa fila, porque la planilla fue sumando columnas
-// (ej. "Par Ganados" / "Par Perdidos") y las posiciones no son fijas.
+// (ej. "Par Ganados" / "Par Perdidos", después renombradas "P Ganados" / "P Perdidos") y las
+// posiciones no son fijas.
 const STANDINGS_COLUMNS = {
   played: /partidos/i,
-  won: /par\w* ganados/i,
-  lost: /par\w* perdidos/i,
+  won: /^p(ar\w*)?\.? ganados/i,
+  lost: /^p(ar\w*)?\.? perdidos/i,
   setsWon: /sets ganados/i,
   setsLost: /sets perdidos/i,
   points: /puntos/i,
