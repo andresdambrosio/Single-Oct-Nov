@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-15T16:27:30.138Z",
+  "updatedAt": "2026-10-17T02:06:29.270Z",
   "players": [
     {
       "id": "patricio-urdinez",
@@ -143,12 +143,12 @@
     "B": [
       {
         "name": "Matias Tini",
-        "played": 2,
-        "won": 1,
+        "played": 3,
+        "won": 2,
         "lost": 1,
-        "setsWon": 3,
+        "setsWon": 5,
         "setsLost": 2,
-        "points": 3
+        "points": 5
       },
       {
         "name": "Axel Lehmann",
@@ -197,11 +197,11 @@
       },
       {
         "name": "Miguel Mendes",
-        "played": 1,
+        "played": 2,
         "won": 0,
-        "lost": 1,
+        "lost": 2,
         "setsWon": 0,
-        "setsLost": 2,
+        "setsLost": 4,
         "points": 0
       }
     ]
@@ -655,8 +655,24 @@
       "week": 5,
       "p1": "Matias Tini",
       "p2": "Miguel Mendes",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-10-17T02:06:29.270Z"
     },
     {
       "id": "B-federico-mencarini-vs-fernando-alberti",
