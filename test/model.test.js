@@ -131,6 +131,8 @@ test('sin resultados, todos los de una zona tienen la misma chance de clasificar
   const fresh = data.matches.map(m => ({ ...m, result: null }));
   const r = computeRatings(data.players, fresh);
   const sim = simulateTournament(data.players, fresh, 20000, rng);
-  const expected = 4 / 7;
-  for (const p of data.players) assert.ok(Math.abs(sim[p.name].qualify - expected) < 0.015, `${p.name}: ${sim[p.name].qualify}`);
+  for (const p of data.players) {
+    const expected = 4 / data.players.filter(o => o.zone === p.zone).length;
+    assert.ok(Math.abs(sim[p.name].qualify - expected) < 0.015, `${p.name}: ${sim[p.name].qualify}`);
+  }
 });

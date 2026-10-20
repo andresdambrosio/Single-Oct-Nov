@@ -23,6 +23,14 @@ const byName = Object.fromEntries(rank.map(r => [r.name, r]));
 const playerLink = name => `<a href="#jugador/${byName[name].id}" class="plink">${esc(name)}</a>`;
 const played = data.matches.filter(m => m.result);
 const pending = data.matches.filter(m => !m.result).sort((a, b) => a.week - b.week);
+// Jugadores que se bajaron con el torneo empezado: ya no están en la planilla, pero cuentan
+// para el armado original de las zonas.
+const withdrawn = data.withdrawn ?? [];
+const withdrawnText = w => `${esc(w.name)} se bajó por ${w.reason}`;
+const zoneSizes = ['A', 'B'].map(z => [...data.players, ...withdrawn].filter(p => p.zone === z).length);
+const zonesText = zoneSizes[0] === zoneSizes[1]
+  ? `Dos zonas de ${zoneSizes[0]} jugadores`
+  : `Dos zonas: la A de ${zoneSizes[0]} jugadores y la B de ${zoneSizes[1]}`;
 
 // Sets desde el punto de vista del ganador: "6-4 6-2".
 // Más reciente primero según cuándo apareció en la planilla; si empatan, la semana del fixture.
@@ -58,7 +66,7 @@ function renderHome() {
   return `<section class="hero">
     <p class="eyebrow">Torneo de singles · Oct-Nov 2026</p>
     <h2>Resultados, tabla y ranking del torneo 🎾</h2>
-    <p class="lead">14 jugadores en 2 zonas. Pasan los 4 mejores de cada una a cuartos, después semis y la final a fin de noviembre.</p>
+    <p class="lead">${data.players.length + withdrawn.length} jugadores en 2 zonas${withdrawn.map(w => `; ${withdrawnText(w)}`).join('')}. Pasan los 4 mejores de cada una a cuartos, después semis y la final a fin de noviembre.</p>
     <div class="hero-cta"><a class="light big" href="#" data-goto="table">Ver la tabla</a><a class="ghost big" href="#" data-goto="matches">Ver resultados</a></div>
   </section>
 
@@ -101,7 +109,7 @@ function renderTable() {
       <tbody>${rows.map((r, i) => `<tr class="${i < 4 ? 'in' : ''}">
         <td>${i + 1}</td><td>${playerLink(r.name)}</td><td>${r.played}</td><td>${r.won}</td><td>${r.setsWon}-${r.setsLost}</td><td><strong>${r.points}</strong></td>
         <td><span class="bar" style="--w:${pct(sim[r.name].qualify)}"></span>${pct(sim[r.name].qualify)}</td></tr>`).join('')}
-      </tbody></table></div></section>`;
+      </tbody></table></div>${withdrawn.filter(w => w.zone === z).map(w => `<p class="muted note">${withdrawnText(w)} con el torneo empezado; sus partidos se sacaron del fixture.</p>`).join('')}</section>`;
   }).join('') + `<p class="muted note">Pasan a cuartos los 4 primeros de cada zona. Ganar suma 2 puntos; perder ganando un set suma 1. Desempate: partido entre ambos.</p>`;
 }
 
@@ -228,7 +236,8 @@ function renderHelp() {
 
   <section id="h-tabla"><h2>📋 La tabla</h2>
     <ul>
-      <li>Dos zonas de 7 jugadores, todos contra todos.</li>
+      <li>${zonesText}, todos contra todos.</li>
+      ${withdrawn.map(w => `<li>${withdrawnText(w)} (Zona ${w.zone}) con el torneo empezado. Sus partidos se sacaron del fixture y la Zona ${w.zone} sigue con ${data.players.filter(p => p.zone === w.zone).length}.</li>`).join('')}
       <li>Partidos al mejor de 3 sets; si se llega al tercero, se juega un super tie-break a 10.</li>
       <li>El ganador suma <strong>2 puntos</strong>. El que pierde suma <strong>1 punto si ganó un set</strong>, si no 0.</li>
       <li>Desempate: el partido entre ambos. Si empatan 3 o más, se miran los partidos entre ellos y después la diferencia de sets.</li>

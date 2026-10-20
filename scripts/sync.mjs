@@ -7,6 +7,9 @@ const SHEET_ID = '1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU';
 const GIDS = { standings: 0, fixture: 1534315027 };
 const OUT = new URL('../data/tournament.json', import.meta.url);
 
+// Bajas con el torneo empezado. La planilla sólo borra al jugador, así que el motivo va acá.
+const WITHDRAWN = [{ name: 'Dionisio Alvarez', zone: 'B', reason: 'abandono técnico' }];
+
 async function fetchCsv(gid) {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
   const res = await fetch(url);
@@ -41,6 +44,7 @@ const data = {
   source: `https://docs.google.com/spreadsheets/d/${SHEET_ID}`,
   updatedAt: now,
   players,
+  withdrawn: WITHDRAWN.filter(w => !players.some(p => p.name === w.name)),
   standings,
   matches,
 };

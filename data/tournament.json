@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-17T23:37:48.916Z",
+  "updatedAt": "2026-10-20T10:40:53.211Z",
   "players": [
     {
       "id": "patricio-poleri",
@@ -59,11 +59,6 @@
       "zone": "B"
     },
     {
-      "id": "dionisio-alvarez",
-      "name": "Dionisio Alvarez",
-      "zone": "B"
-    },
-    {
       "id": "fernando-alberti",
       "name": "Fernando Alberti",
       "zone": "B"
@@ -72,6 +67,13 @@
       "id": "miguel-mendes",
       "name": "Miguel Mendes",
       "zone": "B"
+    }
+  ],
+  "withdrawn": [
+    {
+      "name": "Dionisio Alvarez",
+      "zone": "B",
+      "reason": "abandono técnico"
     }
   ],
   "standings": {
@@ -170,15 +172,6 @@
       },
       {
         "name": "Federico Mencarini",
-        "played": 0,
-        "won": 0,
-        "lost": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
-      },
-      {
-        "name": "Dionisio Alvarez",
         "played": 0,
         "won": 0,
         "lost": 0,
@@ -700,60 +693,6 @@
       "week": 5,
       "p1": "Federico Mencarini",
       "p2": "Fernando Alberti",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-dionisio-alvarez-vs-fernando-uriarte",
-      "zone": "B",
-      "week": 6,
-      "p1": "Dionisio Alvarez",
-      "p2": "Fernando Uriarte",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-dionisio-alvarez-vs-miguel-mendes",
-      "zone": "B",
-      "week": 6,
-      "p1": "Dionisio Alvarez",
-      "p2": "Miguel Mendes",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-dionisio-alvarez-vs-fernando-alberti",
-      "zone": "B",
-      "week": 6,
-      "p1": "Dionisio Alvarez",
-      "p2": "Fernando Alberti",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-axel-lehmann-vs-dionisio-alvarez",
-      "zone": "B",
-      "week": 7,
-      "p1": "Dionisio Alvarez",
-      "p2": "Axel Lehmann",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-dionisio-alvarez-vs-matias-tini",
-      "zone": "B",
-      "week": 7,
-      "p1": "Dionisio Alvarez",
-      "p2": "Matias Tini",
-      "sets": [],
-      "result": null
-    },
-    {
-      "id": "B-dionisio-alvarez-vs-federico-mencarini",
-      "zone": "B",
-      "week": 7,
-      "p1": "Dionisio Alvarez",
-      "p2": "Federico Mencarini",
       "sets": [],
       "result": null
     }
