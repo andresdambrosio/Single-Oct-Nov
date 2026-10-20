@@ -16,13 +16,7 @@
   --radius: 14px;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #121614; --surface: #1b211e; --surface-2: #232b27; --text: #eef1ec; --muted: #9aa39d;
-    --line: #2d3631; --accent: #e07245; --court: #5fae86; --zone-a: #5fae86; --zone-b: #7d9be3;
-    --win: #4cc27f; --lose: #e26a6a; color-scheme: dark;
-  }
-}
+/* Siempre abre en claro; el oscuro se elige con el selector del encabezado. */
 :root[data-theme="dark"] {
   --bg: #121614; --surface: #1b211e; --surface-2: #232b27; --text: #eef1ec; --muted: #9aa39d;
   --line: #2d3631; --accent: #e07245; --court: #5fae86; --zone-a: #5fae86; --zone-b: #7d9be3;
@@ -45,6 +39,10 @@ button { font: inherit; cursor: pointer; }
 .brand { display: flex; gap: 12px; align-items: center; }
 .brand h1 { font-size: 1.4rem; }
 .sub { margin: 0; color: var(--muted); font-size: .8rem; }
+.theme { display: flex; flex: none; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; padding: 2px; }
+.theme button { background: none; border: 0; border-radius: 999px; padding: 5px 10px; color: var(--muted); font-size: .8rem; }
+.theme button[aria-pressed="true"] { background: var(--surface); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .12); }
+@media (max-width: 480px) { .theme button span { display: none; } }
 .ball { width: 34px; height: 34px; border-radius: 50%; background: var(--ball); flex: none;
   background-image: radial-gradient(circle at -20% 50%, transparent 58%, #fff 60%, #fff 64%, transparent 66%),
                     radial-gradient(circle at 120% 50%, transparent 58%, #fff 60%, #fff 64%, transparent 66%); }

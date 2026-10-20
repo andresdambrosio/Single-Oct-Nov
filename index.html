@@ -6,7 +6,7 @@
   <title>Single Oct-Nov</title>
   <meta name="description" content="Resultados, tabla y ranking del torneo de singles Oct-Nov.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎾</text></svg>">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <header class="top">
@@ -17,7 +17,24 @@
         <p class="sub" id="updated"></p>
       </div>
     </a>
+    <div class="theme" role="group" aria-label="Tema">
+      <button type="button" data-theme-choice="light">☀️ <span>Claro</span></button>
+      <button type="button" data-theme-choice="dark">🌙 <span>Oscuro</span></button>
+    </div>
   </header>
+  <script>
+    // Selector de tema: siempre abre en claro; el oscuro dura sólo esa visita.
+    (() => {
+      const buttons = document.querySelectorAll('[data-theme-choice]');
+      const apply = theme => {
+        if (theme === 'dark') document.documentElement.dataset.theme = 'dark';
+        else delete document.documentElement.dataset.theme;
+        buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.themeChoice === theme)));
+      };
+      apply('light');
+      buttons.forEach(b => b.addEventListener('click', () => apply(b.dataset.themeChoice)));
+    })();
+  </script>
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="home" aria-selected="true">Inicio</button>
