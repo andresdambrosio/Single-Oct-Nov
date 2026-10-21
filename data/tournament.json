@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-20T16:08:30.112Z",
+  "updatedAt": "2026-10-21T02:30:15.535Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -154,20 +154,20 @@
       },
       {
         "name": "Axel Lehmann",
-        "played": 1,
-        "won": 1,
+        "played": 2,
+        "won": 2,
         "lost": 0,
-        "setsWon": 2,
+        "setsWon": 4,
         "setsLost": 0,
-        "points": 2
+        "points": 4
       },
       {
         "name": "Fernando Uriarte",
-        "played": 1,
+        "played": 2,
         "won": 1,
-        "lost": 0,
+        "lost": 1,
         "setsWon": 2,
-        "setsLost": 1,
+        "setsLost": 3,
         "points": 2
       },
       {
@@ -675,8 +675,24 @@
       "week": 5,
       "p1": "Axel Lehmann",
       "p2": "Fernando Uriarte",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          4
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-10-21T02:30:15.535Z"
     },
     {
       "id": "B-matias-tini-vs-miguel-mendes",
