@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-21T02:30:15.535Z",
+  "updatedAt": "2026-10-22T16:07:35.032Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -145,12 +145,12 @@
     "B": [
       {
         "name": "Matias Tini",
-        "played": 3,
-        "won": 2,
+        "played": 4,
+        "won": 3,
         "lost": 1,
-        "setsWon": 5,
-        "setsLost": 2,
-        "points": 5
+        "setsWon": 7,
+        "setsLost": 3,
+        "points": 7
       },
       {
         "name": "Axel Lehmann",
@@ -172,12 +172,12 @@
       },
       {
         "name": "Federico Mencarini",
-        "played": 0,
+        "played": 1,
         "won": 0,
-        "lost": 0,
-        "setsWon": 0,
-        "setsLost": 0,
-        "points": 0
+        "lost": 1,
+        "setsWon": 1,
+        "setsLost": 2,
+        "points": 1
       },
       {
         "name": "Fernando Alberti",
@@ -574,8 +574,28 @@
       "week": 2,
       "p1": "Federico Mencarini",
       "p2": "Matias Tini",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          2,
+          6
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          4,
+          10
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 1,
+        "setsP2": 2,
+        "pointsP1": 1,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-10-22T16:07:35.032Z"
     },
     {
       "id": "B-fernando-uriarte-vs-miguel-mendes",
