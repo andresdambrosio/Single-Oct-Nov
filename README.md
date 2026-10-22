@@ -37,7 +37,7 @@ Todo está en [`src/model.js`](src/model.js).
 
 La fuente es la [planilla del torneo](https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU).
 `npm run sync` baja las hojas *Posiciones* y *Partidos* como CSV y genera `data/tournament.json`.
-La GitHub Action `sync.yml` corre ese mismo comando cada 2 horas y commitea si cambió algún resultado.
+La GitHub Action `sync.yml` corre ese mismo comando todas las noches (23:00, hora de Argentina) y commitea si cambió algún resultado.
 
 Fotos y descripciones de los jugadores: `data/profiles.json`. Las fotos van en `assets/players/<id>.jpg`;
 en `photo` se pone esa ruta o una URL.

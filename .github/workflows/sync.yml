@@ -1,9 +1,10 @@
 name: Sync planilla
 
-# Baja la planilla del torneo cada 2 horas y commitea si cambió algún resultado.
+# Baja la planilla del torneo una vez por día, a la noche, y commitea si cambió algún resultado.
 on:
   schedule:
-    - cron: '0 */2 * * *'
+    # 02:00 UTC = 23:00 en Argentina (UTC-3).
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 permissions:

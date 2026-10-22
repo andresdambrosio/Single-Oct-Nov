@@ -275,7 +275,7 @@ function renderHelp() {
     <p class="muted">Es un modelo simple que sólo mira los resultados de este torneo. Es para divertirse, no lo tomes muy en serio 😅</p></section>
 
   <section id="h-datos"><h2>🔄 De dónde salen los datos</h2>
-    <p>Todo sale de la planilla del torneo. El sitio la revisa cada 2 horas, así que un resultado cargado ahí aparece acá en ese plazo.</p></section>
+    <p>Todo sale de la planilla del torneo. El sitio la revisa todas las noches (23 h), así que un resultado cargado ahí durante el día aparece acá esa misma noche.</p></section>
   </article>`;
 }
 
