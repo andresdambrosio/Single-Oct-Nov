@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-24T11:47:57.095Z",
+  "updatedAt": "2026-10-24T22:10:51.536Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -29,13 +29,13 @@
       "zone": "A"
     },
     {
-      "id": "hugo-lopez",
-      "name": "Hugo Lopez",
+      "id": "andres-d-ambrosio",
+      "name": "Andres D'Ambrosio",
       "zone": "A"
     },
     {
-      "id": "andres-d-ambrosio",
-      "name": "Andres D'Ambrosio",
+      "id": "hugo-lopez",
+      "name": "Hugo Lopez",
       "zone": "A"
     },
     {
@@ -80,12 +80,12 @@
     "A": [
       {
         "name": "Juan Pablo Gonzalez",
-        "played": 2,
-        "won": 2,
+        "played": 3,
+        "won": 3,
         "lost": 0,
-        "setsWon": 4,
+        "setsWon": 6,
         "setsLost": 0,
-        "points": 4
+        "points": 6
       },
       {
         "name": "Patricio Poleri",
@@ -124,16 +124,16 @@
         "points": 2
       },
       {
-        "name": "Hugo Lopez",
-        "played": 1,
+        "name": "Andres D'Ambrosio",
+        "played": 2,
         "won": 0,
-        "lost": 1,
+        "lost": 2,
         "setsWon": 1,
-        "setsLost": 2,
+        "setsLost": 4,
         "points": 1
       },
       {
-        "name": "Andres D'Ambrosio",
+        "name": "Hugo Lopez",
         "played": 2,
         "won": 0,
         "lost": 2,
@@ -163,21 +163,21 @@
       },
       {
         "name": "Fernando Uriarte",
-        "played": 2,
-        "won": 1,
+        "played": 3,
+        "won": 2,
         "lost": 1,
-        "setsWon": 2,
-        "setsLost": 3,
-        "points": 2
+        "setsWon": 4,
+        "setsLost": 4,
+        "points": 4
       },
       {
         "name": "Fernando Alberti",
-        "played": 2,
+        "played": 3,
         "won": 1,
-        "lost": 1,
-        "setsWon": 0,
-        "setsLost": 3,
-        "points": 2
+        "lost": 2,
+        "setsWon": 1,
+        "setsLost": 5,
+        "points": 3
       },
       {
         "name": "Federico Mencarini",
@@ -506,8 +506,24 @@
       "week": 7,
       "p1": "Hugo Lopez",
       "p2": "Juan Pablo Gonzalez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          1,
+          6
+        ],
+        [
+          0,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-10-24T22:10:51.536Z"
     },
     {
       "id": "B-axel-lehmann-vs-miguel-mendes",
@@ -656,8 +672,28 @@
       "week": 3,
       "p1": "Fernando Alberti",
       "p2": "Fernando Uriarte",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          3
+        ],
+        [
+          4,
+          6
+        ],
+        [
+          8,
+          10
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 1,
+        "setsP2": 2,
+        "pointsP1": 1,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-10-24T22:10:51.536Z"
     },
     {
       "id": "B-fernando-alberti-vs-miguel-mendes",
