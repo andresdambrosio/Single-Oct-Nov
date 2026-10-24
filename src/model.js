@@ -155,7 +155,7 @@ export function scoreProbs(ra, rb) {
   return { '2-0': s * s, '2-1': 2 * s * u * t, '1-2': 2 * s * u * (1 - t), '0-2': u * u };
 }
 
-// Ranking general: rating, variación y probabilidad de ganarle a un rival promedio.
+// Ranking general: rating y probabilidad de ganarle a un rival promedio.
 export function ranking(players, matches) {
   const ratings = computeRatings(players, matches);
   const played = name => matches.filter(m => m.result && (m.p1 === name || m.p2 === name)).length;
@@ -163,7 +163,6 @@ export function ranking(players, matches) {
     .map(p => ({
       ...p,
       rating: ratings[p.name],
-      change: ratings[p.name] - BASE_RATING,
       vsAverage: winProb(ratings[p.name], BASE_RATING),
       played: played(p.name),
     }))

@@ -177,10 +177,10 @@ function renderRanking() {
     cuenta a quién le ganaste y por cuántos games, y ganarle a alguien que después rinde bien vale más.
     <a href="#h-rank">Cómo se calcula</a></p>
     <div class="table-wrap"><table class="rank">
-      <thead><tr><th>#</th><th>Jugador</th><th>Zona</th><th>PJ</th><th>Rating</th><th>±</th><th title="Probabilidad de ganarle a un jugador promedio">vs. promedio</th></tr></thead>
+      <thead><tr><th>#</th><th>Jugador</th><th>Zona</th><th>PJ</th><th>Rating</th><th title="Probabilidad de ganarle a un jugador promedio">vs. promedio</th></tr></thead>
       <tbody>${rank.map(r => `<tr>
         <td>${r.position}</td><td>${playerLink(r.name)}</td><td><span class="zone z${r.zone}">${r.zone}</span></td><td>${r.played}</td>
-        <td><strong>${fmt(r.rating)}</strong></td><td class="${r.change > 0.5 ? 'up' : r.change < -0.5 ? 'down' : ''}">${r.change > 0.5 ? '+' : ''}${fmt(r.change)}</td>
+        <td><strong>${fmt(r.rating)}</strong></td>
         <td><span class="bar" style="--w:${pct(r.vsAverage)}"></span>${pct(r.vsAverage)}</td></tr>`).join('')}
       </tbody></table></div></section>
     <section class="h2h"><h2>Cara a cara</h2>
