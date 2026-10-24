@@ -25,6 +25,25 @@ test('parseFixture empareja filas consecutivas y lee los sets', () => {
   assert.equal(b.result, null);
 });
 
+test('summarize: si alguien abandona gana el rival y el set a medias no cuenta', () => {
+  assert.deepEqual(summarize([[6, 4], [3, 2]], 1), { winner: 2, setsP1: 1, setsP2: 0, pointsP1: 1, pointsP2: 2, retired: 1 });
+  assert.deepEqual(summarize([[4, 6], [6, 3], [5, 3]], 2), { winner: 1, setsP1: 1, setsP2: 1, pointsP1: 2, pointsP2: 1, retired: 2 });
+  assert.deepEqual(summarize([], 2), { winner: 1, setsP1: 0, setsP2: 0, pointsP1: 2, pointsP2: 0, retired: 2 });
+});
+
+test('parseFixture lee "RET" como abandono de ese jugador', () => {
+  const csv = [
+    '2da Semana ,,,,,,2da Semana,,,,',
+    'ZONA A,Set 1,Set 2,Set 3,Puntos,,ZONA B,Set 1,Set 2,Set 3,Puntos',
+    'Ana,5,2,,2,,Caro,6,,,',
+    'Bea,7,1,RET,1,,Dani,1,ret,,',
+  ].join('\n');
+  const [a, b] = parseFixture(csv, ['Ana', 'Bea', 'Caro', 'Dani']);
+  assert.deepEqual(a.sets, [[5, 7], [2, 1]]);
+  assert.deepEqual(a.result, { winner: 1, setsP1: 0, setsP2: 1, pointsP1: 2, pointsP2: 1, retired: 2 });
+  assert.deepEqual(b.result, { winner: 1, setsP1: 1, setsP2: 0, pointsP1: 2, pointsP2: 0, retired: 2 });
+});
+
 test('parseStandings separa las dos zonas', () => {
   const csv = ',,,,\nJugador,Q,SG,SP,Pts\nAna,1,2,0,2\n,,,,\nJugador,Q,SG,SP,Pts\nCaro,0,0,0,0\n';
   const s = parseStandings(csv);

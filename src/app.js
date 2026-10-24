@@ -35,7 +35,9 @@ const zonesText = zoneSizes[0] === zoneSizes[1]
 // Sets desde el punto de vista del ganador: "6-4 6-2".
 // Más reciente primero según cuándo apareció en la planilla; si empatan, la semana del fixture.
 const byRecent = (a, b) => (b.firstSeen ?? '').localeCompare(a.firstSeen ?? '') || b.week - a.week;
-const winnerSets = m => m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ');
+// Si alguien abandonó se agrega "ret." (el último set puede haber quedado sin terminar).
+const retTag = m => (m.result.retired ? ' ret.' : '');
+const winnerSets = m => m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ') + retTag(m);
 const winnerOf = m => (m.result.winner === 1 ? m.p1 : m.p2);
 const loserOf = m => (m.result.winner === 1 ? m.p2 : m.p1);
 
@@ -127,7 +129,7 @@ function resultCard(m) {
   const w = m.result.winner;
   const row = (name, side) => `<div class="res-row${w === side ? ' win' : ''}"><span>${playerLink(name)}</span>
     <span class="sets">${m.sets.map(s => `<b class="${s[side - 1] > s[2 - side] ? 'won' : ''}">${s[side - 1]}</b>`).join('')}</span></div>`;
-  return `<article class="card done"><div class="card-head"><span class="zone z${m.zone}">Zona ${m.zone}</span><span class="muted">Semana ${m.week}</span></div>
+  return `<article class="card done"><div class="card-head"><span class="zone z${m.zone}">Zona ${m.zone}</span><span class="muted">Semana ${m.week}${m.result.retired ? ' · abandono' : ''}</span></div>
     ${row(m.p1, 1)}${row(m.p2, 2)}</article>`;
 }
 
@@ -209,7 +211,7 @@ function renderPlayer(p) {
     if (!m.result) return `<li><span>Sem. ${m.week}</span><span>vs ${playerLink(rival)}</span><span class="muted">${pct(winProb(r.rating, byName[rival].rating))} de ganar</span></li>`;
     const won = (m.result.winner === 1) === (m.p1 === p.name);
     const sets = m.sets.map(([a, b]) => (m.p1 === p.name ? `${a}-${b}` : `${b}-${a}`)).join(' ');
-    return `<li class="${won ? 'w' : 'l'}"><span>Sem. ${m.week}</span><span>vs ${playerLink(rival)}</span><span>${won ? 'G' : 'P'} ${sets}</span></li>`;
+    return `<li class="${won ? 'w' : 'l'}"><span>Sem. ${m.week}</span><span>vs ${playerLink(rival)}</span><span>${won ? 'G' : 'P'} ${sets}${retTag(m)}</span></li>`;
   };
   return `<a href="#jugadores" class="back">← Todos los jugadores</a>
     <section class="profile">${avatar(p, 'big')}
@@ -240,6 +242,7 @@ function renderHelp() {
       ${withdrawn.map(w => `<li>${withdrawnText(w)} (Zona ${w.zone}) con el torneo empezado. Sus partidos se sacaron del fixture y la Zona ${w.zone} sigue con ${data.players.filter(p => p.zone === w.zone).length}.</li>`).join('')}
       <li>Partidos al mejor de 3 sets; si se llega al tercero, se juega un super tie-break a 10.</li>
       <li>El ganador suma <strong>2 puntos</strong>. El que pierde suma <strong>1 punto si ganó un set</strong>, si no 0.</li>
+      <li>Si un jugador abandona, gana el rival. El que abandona suma 1 punto si ya había ganado un set; el set que quedó a medias no cuenta.</li>
       <li>Desempate: el partido entre ambos. Si empatan 3 o más, se miran los partidos entre ellos y después la diferencia de sets.</li>
       <li>Los 4 primeros de cada zona pasan a cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.</li>
     </ul></section>
