@@ -1,4 +1,4 @@
-import { computeRatings, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, winProb } from './model.js';
+import { computeRatings, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
 
 const $ = sel => document.querySelector(sel);
 const fmt = n => Math.round(n).toLocaleString('es-AR');
@@ -53,13 +53,26 @@ function render() {
   if (tab === 'ranking') { $('#h2h-b').selectedIndex = 1; updateH2H(); }
 }
 
+// "A", "A y B", "A, B y C".
+const joinList = xs => (xs.length > 1 ? `${xs.slice(0, -1).join(', ')} y ${xs.at(-1)}` : xs[0]);
+
+// Tarjeta de favorito. Si varios están a menos de 1 punto se muestran como parejos (por apellido,
+// para que entren); si son más de 3, no hay favorito.
+function favoriteStat(favs) {
+  const chance = name => pct(sim[name].champion);
+  if (favs.length === 1) return `<strong>${esc(favs[0])}</strong><span>favorito al título según el modelo (${chance(favs[0])})</span>`;
+  if (favs.length > 3) return '<strong>Muy parejo</strong><span>nadie se despega al título según el modelo</span>';
+  const chances = favs.map(chance);
+  const detail = new Set(chances).size === 1 ? `${chances[0]} cada uno` : joinList(chances);
+  return `<strong>${esc(joinList(favs.map(n => n.split(' ').at(-1))))}</strong><span>parejos al título según el modelo (${detail})</span>`;
+}
+
 // Portada: resultados y rankings primero, con links a cada pestaña.
 function renderHome() {
   const total = data.matches.length;
   const nextWeek = pending[0]?.week;
   const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 4);
   const lastResults = [...played].sort(byRecent).slice(0, 5);
-  const fav = data.players.map(p => ({ ...p, p: sim[p.name].champion })).sort((a, b) => b.p - a.p)[0];
   const leaders = ['A', 'B'].map(z => {
     const rows = standings(data.players, data.matches, z).slice(0, 4);
     return `<div><h4>Zona ${z}</h4><ol class="list">${rows.map((r, i) => `<li><span class="pos">${i + 1}</span>${playerLink(r.name)}<span class="muted">${r.points} pts</span></li>`).join('')}</ol></div>`;
@@ -76,7 +89,7 @@ function renderHome() {
     <a class="stat" href="#" data-goto="matches"><strong>${played.length}<span class="muted">/${total}</span></strong><span>partidos jugados</span>
       <span class="bar wide" style="--w:${pct(played.length / total)}"></span></a>
     ${nextWeek ? `<a class="stat" href="#" data-goto="matches"><strong>Semana ${nextWeek}</strong><span>${pending.filter(m => m.week === nextWeek).length} partidos por jugar</span></a>` : ''}
-    <a class="stat" href="#" data-goto="outlook"><strong>${esc(fav.name)}</strong><span>favorito al título según el modelo (${pct(fav.p)})</span></a>
+    <a class="stat" href="#" data-goto="outlook">${favoriteStat(titleFavorites(sim, ratings))}</a>
   </section>
 
   <div class="home-grid">

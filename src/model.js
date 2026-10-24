@@ -251,3 +251,13 @@ export function simulateTournament(players, matches, runs = 4000, rng = Math.ran
   for (const v of Object.values(out)) { v.qualify /= runs; v.champion /= runs; }
   return out;
 }
+
+// Favoritos al título: el de más chances y quienes estén a menos de `margin` de él. Con 20.000
+// simulaciones, una diferencia menor a 1 punto es ruido, así que se toman como empatados y se
+// ordenan por rating.
+export function titleFavorites(sim, ratings, margin = 0.01) {
+  const best = Math.max(...Object.values(sim).map(v => v.champion));
+  return Object.keys(sim)
+    .filter(name => best - sim[name].champion < margin)
+    .sort((a, b) => ratings[b] - ratings[a] || sim[b].champion - sim[a].champion);
+}

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFixture, parseStandings, summarize } from '../src/sheet.js';
-import { computeRatings, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, winProb } from '../src/model.js';
+import { computeRatings, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
 test('summarize aplica el reglamento de puntos', () => {
@@ -136,6 +136,13 @@ test('la simulación reparte 100% de probabilidad de campeón', () => {
   assert.ok(Math.abs(total - 1) < 1e-9);
   const qualified = Object.values(sim).reduce((a, v) => a + v.qualify, 0);
   assert.ok(Math.abs(qualified - 8) < 1e-9);
+});
+
+test('titleFavorites: a menos de 1 punto son parejos y van ordenados por rating', () => {
+  const sim = { Ana: { champion: 0.186 }, Bea: { champion: 0.19 }, Caro: { champion: 0.1 } };
+  const ratings = { Ana: 1637, Bea: 1628, Caro: 1556 };
+  assert.deepEqual(titleFavorites(sim, ratings), ['Ana', 'Bea']);
+  assert.deepEqual(titleFavorites({ ...sim, Ana: { champion: 0.15 } }, ratings), ['Bea']);
 });
 
 test('ranking: sin partidos todos arrancan iguales (50%)', async () => {
