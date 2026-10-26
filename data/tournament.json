@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-25T19:31:56.995Z",
+  "updatedAt": "2026-10-26T14:01:46.357Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -9,13 +9,13 @@
       "zone": "A"
     },
     {
-      "id": "patricio-poleri",
-      "name": "Patricio Poleri",
+      "id": "patricio-urdinez",
+      "name": "Patricio Urdinez",
       "zone": "A"
     },
     {
-      "id": "patricio-urdinez",
-      "name": "Patricio Urdinez",
+      "id": "patricio-poleri",
+      "name": "Patricio Poleri",
       "zone": "A"
     },
     {
@@ -88,6 +88,15 @@
         "points": 6
       },
       {
+        "name": "Patricio Urdinez",
+        "played": 4,
+        "won": 3,
+        "lost": 1,
+        "setsWon": 6,
+        "setsLost": 3,
+        "points": 6
+      },
+      {
         "name": "Patricio Poleri",
         "played": 3,
         "won": 2,
@@ -95,15 +104,6 @@
         "setsWon": 5,
         "setsLost": 3,
         "points": 5
-      },
-      {
-        "name": "Patricio Urdinez",
-        "played": 3,
-        "won": 2,
-        "lost": 1,
-        "setsWon": 4,
-        "setsLost": 3,
-        "points": 4
       },
       {
         "name": "Hugo Lopez",
@@ -116,11 +116,11 @@
       },
       {
         "name": "Ariel Kosakoff",
-        "played": 2,
+        "played": 3,
         "won": 1,
-        "lost": 1,
+        "lost": 2,
         "setsWon": 2,
-        "setsLost": 2,
+        "setsLost": 4,
         "points": 2
       },
       {
@@ -481,8 +481,24 @@
       "week": 6,
       "p1": "Patricio Urdinez",
       "p2": "Ariel Kosakoff",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          1
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-10-26T14:01:46.357Z"
     },
     {
       "id": "A-patricio-poleri-vs-roberto-ali",
