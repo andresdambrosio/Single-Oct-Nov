@@ -8,10 +8,12 @@ Resultados, tabla y ranking de un torneo amateur de singles.
 - **Inicio**: últimos resultados, tabla resumida, ranking Elo y próximos partidos.
 - **Tabla**: posiciones por zona según el reglamento (2 pts al ganador, 1 al perdedor que gana un set),
   con la probabilidad de clasificar a cuartos.
+- **Cuadro** (`#cuadro`): cómo serían hoy los cruces de cuartos, semis y final, y la chance de cada uno de llegar a cada ronda.
 - **Partidos**: resultados arriba y lo que falta por semana, con la probabilidad de cada jugador.
 - **Ranking**: rating Elo de todos los jugadores, más un comparador cara a cara.
 - **Jugadores**: foto, descripción y partidos de cada jugador (`#jugador/<id>`).
 - **Pronóstico**: probabilidad de clasificar y de salir campeón, simulando el resto del torneo.
+- **Simulador** (`#simulador`): se elige quién clasifica en cada puesto y el ganador de cada cruce hasta la final.
 - **Cómo funciona** (`#como-funciona`): explica la tabla, el Elo y las probabilidades.
 
 ## Modelo de probabilidades

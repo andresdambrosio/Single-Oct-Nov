@@ -216,9 +216,9 @@ export function standings(players, matches, zone, tiebreak = (a, b) => a.name.lo
 // Simulación Monte Carlo del resto de la fase de grupos + playoff.
 // En cada corrida se sortea el nivel de cada jugador dentro de su incertidumbre (fitPosterior):
 // así alguien que jugó un solo partido no queda como favorito seguro.
-// Devuelve, por jugador, probabilidad de clasificar y de salir campeón.
+// Devuelve, por jugador, probabilidad de clasificar, de llegar a semis y a la final, y de salir campeón.
 export function simulateTournament(players, matches, runs = 4000, rng = Math.random) {
-  const out = Object.fromEntries(players.map(p => [p.name, { qualify: 0, champion: 0 }]));
+  const out = Object.fromEntries(players.map(p => [p.name, { qualify: 0, semi: 0, final: 0, champion: 0 }]));
   const { mean, sd } = fitPosterior(players, matches);
   const pending = matches.filter(m => !m.result);
   const played = matches.filter(m => m.result);
@@ -243,11 +243,13 @@ export function simulateTournament(players, matches, runs = 4000, rng = Math.ran
       const [a, b] = round.from
         ? round.from.map(id => winners[id])
         : [seed[round.a[0]][round.a[1] - 1].name, seed[round.b[0]][round.b[1] - 1].name];
-      winners[round.id] = rng() < fastMatch(x[a] - x[b]).p ? a : b;
+      const w = winners[round.id] = rng() < fastMatch(x[a] - x[b]).p ? a : b;
+      if (round.id.startsWith('QF')) out[w].semi++;
+      else if (round.id.startsWith('SF')) out[w].final++;
     }
     out[winners.F].champion++;
   }
-  for (const v of Object.values(out)) { v.qualify /= runs; v.champion /= runs; }
+  for (const v of Object.values(out)) for (const k in v) v[k] /= runs;
   return out;
 }
 

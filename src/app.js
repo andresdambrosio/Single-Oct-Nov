@@ -1,4 +1,5 @@
 import { computeRatings, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
+import { PLAYOFF } from './sheet.js';
 
 const $ = sel => document.querySelector(sel);
 const fmt = n => Math.round(n).toLocaleString('es-AR');
@@ -42,7 +43,7 @@ const winnerOf = m => (m.result.winner === 1 ? m.p1 : m.p2);
 const loserOf = m => (m.result.winner === 1 ? m.p2 : m.p1);
 
 // ---------- vistas ----------
-const views = { home: renderHome, table: renderTable, matches: renderMatches, ranking: renderRanking, players: renderPlayers, outlook: renderOutlook, help: renderHelp };
+const views = { home: renderHome, table: renderTable, bracket: renderBracket, matches: renderMatches, ranking: renderRanking, players: renderPlayers, outlook: renderOutlook, simulator: renderSimulator, help: renderHelp };
 let tab = 'home';
 let selectedPlayer = null; // id del jugador abierto en la pestaña Jugadores
 
@@ -170,6 +171,117 @@ function renderOutlook() {
       </tbody></table></div></section>`;
 }
 
+// ---------- playoff ----------
+const ROUND_NAMES = { QF1: 'Cuartos 1', QF2: 'Cuartos 2', QF3: 'Cuartos 3', QF4: 'Cuartos 4', SF1: 'Semifinal 1', SF2: 'Semifinal 2', F: 'Final' };
+const ROUNDS = [['Cuartos', ['QF1', 'QF2', 'QF3', 'QF4']], ['Semis', ['SF1', 'SF2']], ['Final', ['F']]];
+const seedTag = ([z, n]) => `${n}°${z}`;
+// Los 4 primeros de cada zona según la tabla de hoy.
+const currentSeeds = () => Object.fromEntries(['A', 'B'].map(z => [z, standings(data.players, data.matches, z).slice(0, 4).map(r => r.name)]));
+
+// Arma el cuadro: quién juega cada cruce y quién lo ganó (sólo si `picks` lo eligió y sigue en ese cruce).
+function resolveBracket(seeds, picks = {}) {
+  const b = {};
+  for (const r of PLAYOFF) {
+    const players = r.from ? r.from.map(id => b[id].winner) : [r.a, r.b].map(([z, n]) => seeds[z][n - 1]);
+    const tags = r.from ? r.from.map(id => `Ganador ${b[id].label}`) : [seedTag(r.a), seedTag(r.b)];
+    const label = r.from ? ROUND_NAMES[r.id] : `${tags[0]} vs ${tags[1]}`;
+    b[r.id] = { ...r, players, tags, label, winner: players.every(Boolean) && players.includes(picks[r.id]) ? picks[r.id] : null };
+  }
+  return b;
+}
+
+// Cuadro en 3 columnas (cuartos, semis, final). `row(match, i)` dibuja cada uno de los dos lados.
+const bracketHtml = (b, row) => `<div class="bracket">${ROUNDS.map(([title, ids]) => `<div class="round"><h4>${title}</h4>
+  <div class="round-body">${ids.map(id => `<article class="bm"><span class="muted bm-title">${ROUND_NAMES[id]}</span>${row(b[id], 0)}${row(b[id], 1)}</article>`).join('')}</div></div>`).join('')}</div>`;
+
+function renderBracket() {
+  const b = resolveBracket(currentSeeds());
+  const left = pending.length;
+  const row = (m, i) => {
+    const [a, c] = m.players;
+    if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
+    const p = winProb(ratings[a], ratings[c]);
+    return `<div class="bm-row"><span class="seed">${m.tags[i]}</span><span class="bm-name">${playerLink(m.players[i])}</span><strong>${pct(i ? 1 - p : p)}</strong></div>`;
+  };
+  const list = data.players.map(p => ({ ...p, ...sim[p.name] })).filter(p => p.qualify > 0.005).sort((a, c) => c.champion - a.champion || c.final - a.final || c.qualify - a.qualify);
+  return `<section><h2>Cuadro del playoff</h2>
+    <p class="muted">Pasan los 4 primeros de cada zona. Cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.
+    Los ganadores de los dos primeros cruces juegan la Semifinal 1, los otros dos la Semifinal 2, y después la final.</p>
+    ${left ? `<p class="note provisional">Cruces <strong>por ahora</strong>, con la tabla de hoy. Faltan ${left} partidos de zona, así que todavía pueden cambiar.</p>` : ''}
+    ${bracketHtml(b, row)}
+    <p class="muted note">El porcentaje es la chance de ganar ese cruce según el ranking. <a href="#simulador">Probá otros resultados en el simulador →</a></p></section>
+  <section><h2>Chances por ronda</h2>
+    <p class="muted">De ${fmt(SIM_RUNS)} simulaciones del resto de la zona y del playoff.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Jugador</th><th>Zona</th><th>Cuartos</th><th>Semis</th><th>Final</th><th>Campeón</th></tr></thead>
+      <tbody>${list.map(p => `<tr><td>${playerLink(p.name)}</td><td><span class="zone z${p.zone}">${p.zone}</span></td>
+        <td>${pct(p.qualify)}</td><td>${pct(p.semi)}</td><td>${pct(p.final)}</td><td><strong>${pct(p.champion)}</strong></td></tr>`).join('')}
+      </tbody></table></div></section>`;
+}
+
+// Simulador: arranca con los cruces de hoy; se puede cambiar quién clasifica en cada puesto y elegir
+// el ganador de cada partido hasta la final.
+let simSeeds = null;
+let simPicks = {};
+
+function renderSimulator() {
+  simSeeds ??= currentSeeds();
+  const b = resolveBracket(simSeeds, simPicks);
+  for (const id of Object.keys(simPicks)) if (b[id].winner !== simPicks[id]) delete simPicks[id];
+  const seedPickers = ['A', 'B'].map(z => {
+    const table = standings(data.players, data.matches, z);
+    return `<div><h4>Zona ${z}</h4>${simSeeds[z].map((name, i) => `<label class="seed-pick"><span class="seed">${i + 1}°${z}</span>
+      <select data-seed="${z}-${i + 1}">${table.map(r => `<option${r.name === name ? ' selected' : ''} value="${esc(r.name)}">${esc(r.name)} · ${r.points} pts</option>`).join('')}</select></label>`).join('')}</div>`;
+  }).join('');
+  const row = (m, i) => {
+    const [a, c] = m.players;
+    if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
+    const p = winProb(ratings[a], ratings[c]);
+    const name = m.players[i];
+    const state = !m.winner ? '' : m.winner === name ? ' won' : ' lost';
+    return `<button type="button" class="bm-row pick${state}" data-pick="${m.id}" data-name="${esc(name)}" aria-pressed="${m.winner === name}">
+      <span class="seed">${m.tags[i].startsWith('Ganador') ? '' : m.tags[i]}</span><span class="bm-name">${esc(name)}</span><strong>${pct(i ? 1 - p : p)}</strong></button>`;
+  };
+  // Chance según el modelo de que salgan todos los ganadores elegidos.
+  const chosen = PLAYOFF.filter(r => b[r.id].winner);
+  const path = chosen.reduce((acc, r) => { const m = b[r.id]; return acc * winProb(ratings[m.winner], ratings[m.players.find(n => n !== m.winner)]); }, 1);
+  const champ = b.F.winner;
+  return `<section><h2>Simulador del playoff</h2>
+    <p class="muted">Arranca con los cruces de hoy. Cambiá quién termina en cada puesto y tocá al ganador de cada partido hasta la final.</p>
+    <div class="panel"><h3>Clasificados</h3><div class="two-col">${seedPickers}</div></div>
+    <div class="sim-actions">
+      <button type="button" class="ghost chip" data-sim="favorites">Completar con favoritos</button>
+      <button type="button" class="ghost chip" data-sim="clear"${chosen.length ? '' : ' disabled'}>Borrar ganadores</button>
+      <button type="button" class="ghost chip" data-sim="reset">Volver a la tabla de hoy</button>
+    </div>
+    ${bracketHtml(b, row)}
+    ${champ ? `<div class="champion">🏆 <div><span><strong>${esc(champ)}</strong> campeón</span><span class="muted">Chance de que salga todo así según el modelo: ${path < 0.01 ? '<1%' : pct(path)}</span></div></div>`
+      : `<p class="muted note">${chosen.length ? `Elegiste ${chosen.length} de 7 partidos.` : 'El porcentaje es la chance de ganar cada partido según el ranking.'}</p>`}
+  </section>`;
+}
+
+function simAction(action) {
+  if (action === 'reset') { simSeeds = currentSeeds(); simPicks = {}; }
+  else if (action === 'clear') simPicks = {};
+  else if (action === 'favorites') {
+    for (const r of PLAYOFF) {
+      const m = resolveBracket(simSeeds, simPicks)[r.id];
+      if (m.winner) continue;
+      const [a, c] = m.players;
+      simPicks[r.id] = winProb(ratings[a], ratings[c]) >= 0.5 ? a : c;
+    }
+  }
+}
+
+// Cambiar a alguien de puesto: si ya estaba en otro puesto de la zona, intercambian.
+function setSeed(key, name) {
+  const [z, n] = key.split('-');
+  const seeds = simSeeds[z];
+  const other = seeds.indexOf(name);
+  if (other >= 0) seeds[other] = seeds[n - 1];
+  seeds[n - 1] = name;
+}
+
 function renderRanking() {
   const opts = rank.map(r => `<option>${esc(r.name)}</option>`).join('');
   return `<section><h2>Ranking</h2>
@@ -257,7 +369,8 @@ function renderHelp() {
       <li>El ganador suma <strong>2 puntos</strong>. El que pierde suma <strong>1 punto si ganó un set</strong>, si no 0.</li>
       <li>Si un jugador abandona, gana el rival. El que abandona suma 1 punto si ya había ganado un set; el set que quedó a medias no cuenta.</li>
       <li>Desempate: el partido entre ambos. Si empatan 3 o más, se miran los partidos entre ellos y después la diferencia de sets.</li>
-      <li>Los 4 primeros de cada zona pasan a cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.</li>
+      <li>Los 4 primeros de cada zona pasan a cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.
+        Los ganadores de los dos primeros cruces juegan la Semifinal 1 y los de los otros dos la Semifinal 2. <a href="#cuadro">Ver el cuadro</a></li>
     </ul></section>
 
   <section id="h-rank"><h2>📊 El ranking</h2>
@@ -296,7 +409,7 @@ function renderHelp() {
 }
 
 // Navegación por hash para poder compartir links.
-const HASH_TABS = { inicio: 'home', tabla: 'table', partidos: 'matches', ranking: 'ranking', jugadores: 'players', pronostico: 'outlook', 'como-funciona': 'help' };
+const HASH_TABS = { inicio: 'home', tabla: 'table', cuadro: 'bracket', partidos: 'matches', ranking: 'ranking', jugadores: 'players', pronostico: 'outlook', simulador: 'simulator', 'como-funciona': 'help' };
 function route() {
   const h = decodeURIComponent(location.hash.slice(1));
   if (h.startsWith('h-')) { // ancla dentro de "Cómo funciona"
@@ -310,7 +423,23 @@ function route() {
   window.scrollTo(0, 0);
 }
 window.addEventListener('hashchange', route);
-document.addEventListener('change', e => { if (e.target.id?.startsWith('h2h-')) updateH2H(); });
+document.addEventListener('change', e => {
+  if (e.target.id?.startsWith('h2h-')) updateH2H();
+  else if (e.target.dataset.seed) { setSeed(e.target.dataset.seed, e.target.value); render(); }
+});
+
+// Simulador: elegir ganador de un partido (tocarlo de nuevo lo deselecciona) y los botones de acciones.
+document.addEventListener('click', e => {
+  const pick = e.target.closest('[data-pick]');
+  const action = e.target.closest('[data-sim]');
+  if (pick) {
+    const { pick: id, name } = pick.dataset;
+    if (simPicks[id] === name) delete simPicks[id];
+    else simPicks[id] = name;
+  } else if (action) simAction(action.dataset.sim);
+  else return;
+  render();
+});
 
 document.addEventListener('click', e => {
   const goto = e.target.closest('[data-goto]');

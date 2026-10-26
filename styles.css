@@ -168,6 +168,38 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 .results li { grid-template-columns: minmax(0, 1fr) auto; }
 .mini-match strong { color: var(--text); }
 
+/* Cuadro del playoff: cuartos, semis y final en columnas; en el celular, una debajo de la otra. */
+.bracket { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
+.round { display: flex; flex-direction: column; gap: 8px; }
+.round h4 { margin: 0; font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.round-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 10px; }
+.bm { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px; display: grid; gap: 4px; }
+.bm-title { font-size: .75rem; padding: 0 4px; }
+.bm-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; align-items: center; min-height: 36px;
+  padding: 6px 8px; border-radius: 10px; background: var(--surface-2); font-variant-numeric: tabular-nums; }
+.bm-row > .muted:only-child { grid-column: 1 / -1; font-size: .85rem; }
+.bm-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seed { font-size: .75rem; font-weight: 700; color: var(--muted); }
+.provisional { background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 8px; padding: 8px 12px; }
+button.bm-row { width: 100%; border: 1px solid transparent; color: var(--text); text-align: left; }
+button.bm-row:hover { border-color: var(--accent); }
+button.bm-row.won { background: var(--court); color: #fff; font-weight: 700; }
+button.bm-row.won .seed { color: rgb(255 255 255 / .8); }
+button.bm-row.lost { opacity: .5; text-decoration: line-through; }
+.seed-pick { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 6px; }
+.seed-pick select { min-width: 0; padding: 6px 8px; }
+.sim-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { border-radius: 99px; padding: 6px 14px; font-size: .85rem; }
+.chip:hover:not(:disabled) { border-color: var(--accent); }
+.chip:disabled { opacity: .5; cursor: default; }
+.champion { display: flex; gap: 12px; align-items: center; margin-top: 14px; padding: 14px 16px; border-radius: var(--radius);
+  background: var(--court); color: #fff; font-size: 1.6rem; }
+.champion div { font-size: 1rem; display: grid; }
+.champion .muted { color: rgb(255 255 255 / .8); font-size: .85rem; }
+@media (max-width: 700px) {
+  .bracket { grid-template-columns: 1fr; }
+}
+
 .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8rem; }
 
 @media (max-width: 560px) {

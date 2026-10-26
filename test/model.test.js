@@ -134,8 +134,10 @@ test('la simulación reparte 100% de probabilidad de campeón', () => {
   const sim = simulateTournament(data.players, data.matches, 300, rng);
   const total = Object.values(sim).reduce((a, v) => a + v.champion, 0);
   assert.ok(Math.abs(total - 1) < 1e-9);
-  const qualified = Object.values(sim).reduce((a, v) => a + v.qualify, 0);
-  assert.ok(Math.abs(qualified - 8) < 1e-9);
+  const sum = key => Object.values(sim).reduce((a, v) => a + v[key], 0);
+  assert.ok(Math.abs(sum('qualify') - 8) < 1e-9);
+  assert.ok(Math.abs(sum('semi') - 4) < 1e-9);
+  assert.ok(Math.abs(sum('final') - 2) < 1e-9);
 });
 
 test('titleFavorites: a menos de 1 punto son parejos y van ordenados por rating', () => {
