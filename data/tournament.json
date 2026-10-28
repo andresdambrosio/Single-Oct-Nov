@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-26T14:01:46.357Z",
+  "updatedAt": "2026-10-28T02:09:13.777Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -80,12 +80,12 @@
     "A": [
       {
         "name": "Juan Pablo Gonzalez",
-        "played": 3,
-        "won": 3,
+        "played": 4,
+        "won": 4,
         "lost": 0,
-        "setsWon": 6,
+        "setsWon": 8,
         "setsLost": 0,
-        "points": 6
+        "points": 8
       },
       {
         "name": "Patricio Urdinez",
@@ -125,11 +125,11 @@
       },
       {
         "name": "Roberto Ali",
-        "played": 3,
+        "played": 4,
         "won": 1,
-        "lost": 2,
+        "lost": 3,
         "setsWon": 2,
-        "setsLost": 5,
+        "setsLost": 7,
         "points": 2
       },
       {
@@ -395,8 +395,24 @@
       "week": 4,
       "p1": "Roberto Ali",
       "p2": "Juan Pablo Gonzalez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          2,
+          6
+        ],
+        [
+          2,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-10-28T02:09:13.777Z"
     },
     {
       "id": "A-ariel-kosakoff-vs-patricio-poleri",
