@@ -37,7 +37,9 @@ const zonesText = zoneSizes[0] === zoneSizes[1]
 // Más reciente primero según cuándo apareció en la planilla; si empatan, la semana del fixture.
 const byRecent = (a, b) => (b.firstSeen ?? '').localeCompare(a.firstSeen ?? '') || b.week - a.week;
 // Si alguien abandonó se agrega "ret." (el último set puede haber quedado sin terminar).
-const retTag = m => (m.result.retired ? ' ret.' : '');
+// Si no se llegó a jugar ningún set, es un W.O.
+const isWalkover = m => m.result.retired && !m.sets.length;
+const retTag = m => (isWalkover(m) ? 'W.O.' : m.result.retired ? ' ret.' : '');
 const winnerSets = m => m.sets.map(([a, b]) => (m.result.winner === 1 ? `${a}-${b}` : `${b}-${a}`)).join(' ') + retTag(m);
 const winnerOf = m => (m.result.winner === 1 ? m.p1 : m.p2);
 const loserOf = m => (m.result.winner === 1 ? m.p2 : m.p1);
@@ -143,7 +145,7 @@ function resultCard(m) {
   const w = m.result.winner;
   const row = (name, side) => `<div class="res-row${w === side ? ' win' : ''}"><span>${playerLink(name)}</span>
     <span class="sets">${m.sets.map(s => `<b class="${s[side - 1] > s[2 - side] ? 'won' : ''}">${s[side - 1]}</b>`).join('')}</span></div>`;
-  return `<article class="card done"><div class="card-head"><span class="zone z${m.zone}">Zona ${m.zone}</span><span class="muted">Semana ${m.week}${m.result.retired ? ' · abandono' : ''}</span></div>
+  return `<article class="card done"><div class="card-head"><span class="zone z${m.zone}">Zona ${m.zone}</span><span class="muted">Semana ${m.week}${isWalkover(m) ? ' · W.O.' : m.result.retired ? ' · abandono' : ''}</span></div>
     ${row(m.p1, 1)}${row(m.p2, 2)}</article>`;
 }
 
