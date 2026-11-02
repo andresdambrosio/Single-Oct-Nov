@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-10-29T16:45:28.271Z",
+  "updatedAt": "2026-11-02T14:33:55.830Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -89,12 +89,12 @@
       },
       {
         "name": "Patricio Urdinez",
-        "played": 4,
-        "won": 3,
+        "played": 5,
+        "won": 4,
         "lost": 1,
-        "setsWon": 6,
+        "setsWon": 8,
         "setsLost": 3,
-        "points": 6
+        "points": 8
       },
       {
         "name": "Patricio Poleri",
@@ -107,12 +107,12 @@
       },
       {
         "name": "Hugo Lopez",
-        "played": 3,
-        "won": 1,
+        "played": 4,
+        "won": 2,
         "lost": 2,
-        "setsWon": 3,
+        "setsWon": 5,
         "setsLost": 4,
-        "points": 3
+        "points": 5
       },
       {
         "name": "Ariel Kosakoff",
@@ -125,20 +125,20 @@
       },
       {
         "name": "Roberto Ali",
-        "played": 4,
+        "played": 5,
         "won": 1,
-        "lost": 3,
+        "lost": 4,
         "setsWon": 2,
-        "setsLost": 7,
+        "setsLost": 9,
         "points": 2
       },
       {
         "name": "Andres D'Ambrosio",
-        "played": 3,
+        "played": 4,
         "won": 0,
-        "lost": 3,
+        "lost": 4,
         "setsWon": 1,
-        "setsLost": 6,
+        "setsLost": 8,
         "points": 1
       }
     ],
@@ -339,8 +339,24 @@
       "week": 2,
       "p1": "Roberto Ali",
       "p2": "Hugo Lopez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          3,
+          6
+        ],
+        [
+          6,
+          7
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-11-02T14:33:55.830Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-roberto-ali",
@@ -556,8 +572,24 @@
       "week": 7,
       "p1": "Patricio Urdinez",
       "p2": "Andres D'Ambrosio",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-11-02T14:33:55.830Z"
     },
     {
       "id": "A-ariel-kosakoff-vs-roberto-ali",
