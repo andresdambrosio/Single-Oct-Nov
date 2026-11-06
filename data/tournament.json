@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-02T14:33:55.830Z",
+  "updatedAt": "2026-11-06T08:45:20.375Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -145,20 +145,20 @@
     "B": [
       {
         "name": "Axel Lehmann",
-        "played": 4,
-        "won": 3,
+        "played": 5,
+        "won": 4,
         "lost": 1,
-        "setsWon": 5,
+        "setsWon": 7,
         "setsLost": 0,
-        "points": 7
+        "points": 9
       },
       {
         "name": "Matias Tini",
-        "played": 4,
+        "played": 5,
         "won": 3,
-        "lost": 1,
+        "lost": 2,
         "setsWon": 7,
-        "setsLost": 3,
+        "setsLost": 5,
         "points": 7
       },
       {
@@ -779,8 +779,24 @@
       "week": 3,
       "p1": "Axel Lehmann",
       "p2": "Matias Tini",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          2
+        ],
+        [
+          6,
+          0
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-11-06T08:45:20.375Z"
     },
     {
       "id": "B-fernando-alberti-vs-fernando-uriarte",
