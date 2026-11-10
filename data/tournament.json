@@ -1,16 +1,16 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-09T20:09:32.148Z",
+  "updatedAt": "2026-11-10T18:18:02.779Z",
   "players": [
-    {
-      "id": "patricio-urdinez",
-      "name": "Patricio Urdinez",
-      "zone": "A"
-    },
     {
       "id": "juan-pablo-gonzalez",
       "name": "Juan Pablo Gonzalez",
+      "zone": "A"
+    },
+    {
+      "id": "patricio-urdinez",
+      "name": "Patricio Urdinez",
       "zone": "A"
     },
     {
@@ -79,6 +79,15 @@
   "standings": {
     "A": [
       {
+        "name": "Juan Pablo Gonzalez",
+        "played": 5,
+        "won": 5,
+        "lost": 0,
+        "setsWon": 10,
+        "setsLost": 0,
+        "points": 10
+      },
+      {
         "name": "Patricio Urdinez",
         "played": 6,
         "won": 5,
@@ -88,21 +97,12 @@
         "points": 10
       },
       {
-        "name": "Juan Pablo Gonzalez",
-        "played": 4,
-        "won": 4,
-        "lost": 0,
-        "setsWon": 8,
-        "setsLost": 0,
-        "points": 8
-      },
-      {
         "name": "Patricio Poleri",
-        "played": 3,
+        "played": 4,
         "won": 2,
-        "lost": 1,
+        "lost": 2,
         "setsWon": 5,
-        "setsLost": 3,
+        "setsLost": 5,
         "points": 5
       },
       {
@@ -393,8 +393,24 @@
       "week": 3,
       "p1": "Juan Pablo Gonzalez",
       "p2": "Patricio Poleri",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          7,
+          5
+        ],
+        [
+          6,
+          3
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-11-10T18:18:02.779Z"
     },
     {
       "id": "A-hugo-lopez-vs-patricio-urdinez",
