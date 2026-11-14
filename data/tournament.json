@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-14T08:19:07.512Z",
+  "updatedAt": "2026-11-14T20:24:04.416Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -80,12 +80,12 @@
     "A": [
       {
         "name": "Juan Pablo Gonzalez",
-        "played": 5,
-        "won": 5,
+        "played": 6,
+        "won": 6,
         "lost": 0,
-        "setsWon": 10,
+        "setsWon": 12,
         "setsLost": 0,
-        "points": 10
+        "points": 12
       },
       {
         "name": "Patricio Urdinez",
@@ -98,12 +98,12 @@
       },
       {
         "name": "Patricio Poleri",
-        "played": 4,
-        "won": 2,
+        "played": 5,
+        "won": 3,
         "lost": 2,
-        "setsWon": 5,
-        "setsLost": 5,
-        "points": 5
+        "setsWon": 7,
+        "setsLost": 6,
+        "points": 7
       },
       {
         "name": "Hugo Lopez",
@@ -116,12 +116,12 @@
       },
       {
         "name": "Ariel Kosakoff",
-        "played": 3,
+        "played": 4,
         "won": 1,
-        "lost": 2,
-        "setsWon": 2,
-        "setsLost": 4,
-        "points": 2
+        "lost": 3,
+        "setsWon": 3,
+        "setsLost": 6,
+        "points": 3
       },
       {
         "name": "Roberto Ali",
@@ -134,11 +134,11 @@
       },
       {
         "name": "Andres D'Ambrosio",
-        "played": 4,
+        "played": 5,
         "won": 0,
-        "lost": 4,
+        "lost": 5,
         "setsWon": 1,
-        "setsLost": 8,
+        "setsLost": 10,
         "points": 1
       }
     ],
@@ -468,8 +468,28 @@
       "week": 4,
       "p1": "Ariel Kosakoff",
       "p2": "Patricio Poleri",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          4
+        ],
+        [
+          2,
+          6
+        ],
+        [
+          9,
+          11
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 1,
+        "setsP2": 2,
+        "pointsP1": 1,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-11-14T20:24:04.416Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-hugo-lopez",
@@ -595,8 +615,24 @@
       "week": 6,
       "p1": "Andres D'Ambrosio",
       "p2": "Juan Pablo Gonzalez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          2,
+          6
+        ],
+        [
+          1,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-11-14T20:24:04.416Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-patricio-urdinez",
