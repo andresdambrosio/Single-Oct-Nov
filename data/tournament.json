@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-10T18:18:02.779Z",
+  "updatedAt": "2026-11-14T08:19:07.512Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -49,13 +49,13 @@
       "zone": "B"
     },
     {
-      "id": "fernando-uriarte",
-      "name": "Fernando Uriarte",
+      "id": "fernando-alberti",
+      "name": "Fernando Alberti",
       "zone": "B"
     },
     {
-      "id": "fernando-alberti",
-      "name": "Fernando Alberti",
+      "id": "fernando-uriarte",
+      "name": "Fernando Uriarte",
       "zone": "B"
     },
     {
@@ -162,6 +162,15 @@
         "points": 7
       },
       {
+        "name": "Fernando Alberti",
+        "played": 5,
+        "won": 3,
+        "lost": 2,
+        "setsWon": 3,
+        "setsLost": 5,
+        "points": 7
+      },
+      {
         "name": "Fernando Uriarte",
         "played": 4,
         "won": 3,
@@ -171,21 +180,12 @@
         "points": 6
       },
       {
-        "name": "Fernando Alberti",
-        "played": 4,
-        "won": 2,
-        "lost": 2,
-        "setsWon": 1,
-        "setsLost": 5,
-        "points": 5
-      },
-      {
         "name": "Miguel Mendes",
-        "played": 3,
+        "played": 4,
         "won": 1,
-        "lost": 2,
+        "lost": 3,
         "setsWon": 0,
-        "setsLost": 4,
+        "setsLost": 6,
         "points": 2
       },
       {
@@ -865,8 +865,24 @@
       "week": 4,
       "p1": "Miguel Mendes",
       "p2": "Fernando Alberti",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          3,
+          6
+        ],
+        [
+          2,
+          6
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 0,
+        "setsP2": 2,
+        "pointsP1": 0,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-11-14T08:19:07.512Z"
     },
     {
       "id": "B-fernando-uriarte-vs-matias-tini",
