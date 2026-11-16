@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-14T20:24:04.416Z",
+  "updatedAt": "2026-11-16T01:22:55.051Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -116,20 +116,20 @@
       },
       {
         "name": "Ariel Kosakoff",
-        "played": 4,
-        "won": 1,
+        "played": 5,
+        "won": 2,
         "lost": 3,
-        "setsWon": 3,
+        "setsWon": 5,
         "setsLost": 6,
-        "points": 3
+        "points": 5
       },
       {
         "name": "Roberto Ali",
-        "played": 5,
+        "played": 6,
         "won": 1,
-        "lost": 4,
+        "lost": 5,
         "setsWon": 2,
-        "setsLost": 9,
+        "setsLost": 11,
         "points": 2
       },
       {
@@ -665,8 +665,24 @@
       "week": 7,
       "p1": "Ariel Kosakoff",
       "p2": "Roberto Ali",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          3
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-11-16T01:22:55.051Z"
     },
     {
       "id": "A-hugo-lopez-vs-juan-pablo-gonzalez",
