@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-16T01:22:55.051Z",
+  "updatedAt": "2026-11-20T09:25:41.438Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -44,6 +44,11 @@
       "zone": "B"
     },
     {
+      "id": "fernando-uriarte",
+      "name": "Fernando Uriarte",
+      "zone": "B"
+    },
+    {
       "id": "matias-tini",
       "name": "Matias Tini",
       "zone": "B"
@@ -51,11 +56,6 @@
     {
       "id": "fernando-alberti",
       "name": "Fernando Alberti",
-      "zone": "B"
-    },
-    {
-      "id": "fernando-uriarte",
-      "name": "Fernando Uriarte",
       "zone": "B"
     },
     {
@@ -153,6 +153,15 @@
         "points": 9
       },
       {
+        "name": "Fernando Uriarte",
+        "played": 5,
+        "won": 3,
+        "lost": 2,
+        "setsWon": 5,
+        "setsLost": 6,
+        "points": 7
+      },
+      {
         "name": "Matias Tini",
         "played": 5,
         "won": 3,
@@ -171,22 +180,13 @@
         "points": 7
       },
       {
-        "name": "Fernando Uriarte",
-        "played": 4,
-        "won": 3,
-        "lost": 1,
-        "setsWon": 4,
-        "setsLost": 4,
-        "points": 6
-      },
-      {
         "name": "Miguel Mendes",
-        "played": 4,
-        "won": 1,
+        "played": 5,
+        "won": 2,
         "lost": 3,
-        "setsWon": 0,
-        "setsLost": 6,
-        "points": 2
+        "setsWon": 2,
+        "setsLost": 7,
+        "points": 4
       },
       {
         "name": "Federico Mencarini",
@@ -811,8 +811,28 @@
       "week": 2,
       "p1": "Fernando Uriarte",
       "p2": "Miguel Mendes",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          4,
+          6
+        ],
+        [
+          7,
+          5
+        ],
+        [
+          2,
+          10
+        ]
+      ],
+      "result": {
+        "winner": 2,
+        "setsP1": 1,
+        "setsP2": 2,
+        "pointsP1": 1,
+        "pointsP2": 2
+      },
+      "firstSeen": "2026-11-20T09:25:41.438Z"
     },
     {
       "id": "B-axel-lehmann-vs-fernando-alberti",
