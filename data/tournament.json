@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-20T09:25:41.438Z",
+  "updatedAt": "2026-11-22T18:34:08.035Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -19,13 +19,13 @@
       "zone": "A"
     },
     {
-      "id": "hugo-lopez",
-      "name": "Hugo Lopez",
+      "id": "ariel-kosakoff",
+      "name": "Ariel Kosakoff",
       "zone": "A"
     },
     {
-      "id": "ariel-kosakoff",
-      "name": "Ariel Kosakoff",
+      "id": "hugo-lopez",
+      "name": "Hugo Lopez",
       "zone": "A"
     },
     {
@@ -106,21 +106,21 @@
         "points": 7
       },
       {
-        "name": "Hugo Lopez",
-        "played": 5,
-        "won": 2,
+        "name": "Ariel Kosakoff",
+        "played": 6,
+        "won": 3,
         "lost": 3,
-        "setsWon": 5,
+        "setsWon": 7,
         "setsLost": 6,
-        "points": 5
+        "points": 7
       },
       {
-        "name": "Ariel Kosakoff",
-        "played": 5,
+        "name": "Hugo Lopez",
+        "played": 6,
         "won": 2,
-        "lost": 3,
+        "lost": 4,
         "setsWon": 5,
-        "setsLost": 6,
+        "setsLost": 8,
         "points": 5
       },
       {
@@ -547,8 +547,24 @@
       "week": 5,
       "p1": "Ariel Kosakoff",
       "p2": "Hugo Lopez",
-      "sets": [],
-      "result": null
+      "sets": [
+        [
+          6,
+          0
+        ],
+        [
+          6,
+          2
+        ]
+      ],
+      "result": {
+        "winner": 1,
+        "setsP1": 2,
+        "setsP2": 0,
+        "pointsP1": 2,
+        "pointsP2": 0
+      },
+      "firstSeen": "2026-11-22T18:34:08.035Z"
     },
     {
       "id": "A-andres-d-ambrosio-vs-patricio-poleri",
