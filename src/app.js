@@ -1,4 +1,4 @@
-import { computeRatings, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
+import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
 import { PLAYOFF } from './sheet.js';
 
 const $ = sel => document.querySelector(sel);
@@ -6,16 +6,22 @@ const fmt = n => Math.round(n).toLocaleString('es-AR');
 const pct = p => `${Math.round(p * 100)}%`;
 const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 
-const [data, profiles] = await Promise.all([
+const [data, profiles, knockoutResults] = await Promise.all([
   fetch('data/tournament.json', { cache: 'no-cache' }).then(r => r.json()),
   fetch('data/profiles.json', { cache: 'no-cache' }).then(r => r.json()).then(j => j.players).catch(() => ({})),
+  // Resultados del playoff: { QF1: { winner, score }, ... } con el marcador desde el ganador.
+  fetch('data/playoff.json', { cache: 'no-cache' }).then(r => r.json()).then(j => j.results ?? {}).catch(() => ({})),
 ]);
 const ratings = computeRatings(data.players, data.matches);
 // Semilla fija: las probabilidades no cambian al recargar, sólo cuando entra un resultado.
 let seed = 20261004;
 const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const SIM_RUNS = 20000;
-const sim = simulateTournament(data.players, data.matches, SIM_RUNS, rng);
+const knockoutWinners = Object.fromEntries(Object.entries(knockoutResults).map(([id, r]) => [id, r.winner]));
+const sim = simulateTournament(data.players, data.matches, SIM_RUNS, rng, knockoutWinners);
+// Cuando los 8 clasificados y sus puestos ya no pueden cambiar, el sitio pasa a modo mata-mata.
+const locked = { A: lockedSeeds(data.players, data.matches, 'A'), B: lockedSeeds(data.players, data.matches, 'B') };
+const knockoutMode = Boolean(locked.A && locked.B);
 
 const rank = ranking(data.players, data.matches);
 // Empates comparten posición (ej. todos en 1500 al arrancar).
@@ -70,8 +76,67 @@ function favoriteStat(favs) {
   return `<strong>${esc(joinList(favs.map(n => n.split(' ').at(-1))))}</strong><span>parejos al título según el modelo (${detail})</span>`;
 }
 
-// Portada: resultados y rankings primero, con links a cada pestaña.
 function renderHome() {
+  return knockoutMode ? renderKnockoutHome() : renderGroupHome();
+}
+
+// Portada del mata-mata: el cuadro primero, después quién puede salir campeón y cómo terminaron las zonas.
+const ROUND_HEADLINES = {
+  Cuartos: ['Se vienen los cuartos de final', 'Se están jugando los cuartos de final'],
+  Semis: ['Se vienen las semifinales', 'Se están jugando las semifinales'],
+  Final: ['Se viene la final', 'Se viene la final'],
+};
+function renderKnockoutHome() {
+  const b = resolveBracket(currentSeeds());
+  const champ = b.F.winner;
+  const [roundName, roundIds] = ROUNDS.find(([, ids]) => ids.some(id => !b[id].result)) ?? ROUNDS.at(-1);
+  const roundDone = roundIds.filter(id => b[id].result).length;
+  const playedKnockout = PLAYOFF.filter(r => b[r.id].result).reverse();
+  const loserOfRound = m => m.players.find(n => n !== m.winner);
+  const out = new Set(playedKnockout.map(r => loserOfRound(b[r.id])));
+  const alive = [...locked.A, ...locked.B].filter(n => !out.has(n)).sort((x, y) => sim[y].champion - sim[x].champion);
+  const finalMatch = b.F;
+  const headline = champ ? `🏆 ${esc(champ)}, campeón` : `${ROUND_HEADLINES[roundName][roundDone ? 1 : 0]} 🎾`;
+  const lead = champ
+    ? `Le ganó la final a ${esc(loserOfRound(finalMatch))}${finalMatch.result.score ? ` ${esc(finalMatch.result.score)}` : ''}. ¡Felicitaciones!`
+    : 'Terminó la fase de grupos y pasaron los 4 mejores de cada zona. Ahora es mata-mata: el que pierde, queda afuera.';
+  const seedsList = ['A', 'B'].map(z => {
+    const rows = standings(data.players, data.matches, z).slice(0, 4);
+    return `<div><h4>Zona ${z}</h4><ol class="list">${rows.map((r, i) => `<li><span class="pos">${i + 1}°</span>${playerLink(r.name)}<span class="muted">${r.points} pts</span></li>`).join('')}</ol></div>`;
+  }).join('');
+
+  return `<section class="hero">
+    <p class="eyebrow">Torneo de singles · Oct-Nov 2026 · Mata-mata</p>
+    <h2>${headline}</h2>
+    <p class="lead">${lead}</p>
+    <div class="hero-cta"><a class="light big" href="#" data-goto="bracket">Ver el cuadro</a><a class="ghost big" href="#" data-goto="simulator">Probar el simulador</a></div>
+  </section>
+
+  <section class="stats">
+    ${champ ? '' : `<a class="stat" href="#" data-goto="bracket"><strong>${roundName}</strong><span>${roundDone} de ${roundIds.length} ${roundIds.length === 1 ? 'partido jugado' : 'partidos jugados'}</span>
+      <span class="bar wide" style="--w:${pct(roundDone / roundIds.length)}"></span></a>
+    <a class="stat" href="#" data-goto="outlook">${favoriteStat(titleFavorites(sim, ratings))}</a>`}
+    <a class="stat" href="#" data-goto="table"><strong>Fase de grupos</strong><span>${pending.length ? `${played.length} de ${data.matches.length} partidos jugados; ${pending.length === 1 ? 'el que falta no cambia' : 'los que faltan no cambian'} los cruces` : 'terminada'}</span></a>
+  </section>
+
+  <section><h2>Cuadro</h2>
+    ${bracketHtml(b, bracketRow)}
+    <p class="muted note">${champ ? '' : 'El porcentaje es la chance de ganar cada cruce según el ranking. '}<a href="#" data-goto="bracket">Ver las chances por ronda →</a></p></section>
+
+  <div class="home-grid">
+    ${champ ? '' : `<section class="panel"><h3>Chances de salir campeón</h3>
+      <ol class="list">${alive.map((n, i) => `<li><span class="pos">${i + 1}</span>${playerLink(n)}<span class="muted">${pct(sim[n].champion)}</span></li>`).join('')}</ol>
+      <a class="more" href="#" data-goto="simulator">Armá tu propio cuadro →</a></section>`}
+    <section class="panel wide"><h3>Clasificados <span class="muted">· así terminaron las zonas</span></h3>
+      <div class="two-col">${seedsList}</div>
+      <a class="more" href="#" data-goto="table">Ver la tabla completa →</a></section>
+    ${playedKnockout.length ? `<section class="panel"><h3>Resultados del mata-mata</h3>
+      <ul class="list results">${playedKnockout.map(r => { const m = b[r.id]; return `<li><span>${playerLink(m.winner)} le ganó a ${playerLink(loserOfRound(m))}</span><span class="muted">${esc(m.result.score ?? '')}</span></li>`; }).join('')}</ul></section>` : ''}
+  </div>`;
+}
+
+// Portada de la fase de grupos: resultados y rankings primero, con links a cada pestaña.
+function renderGroupHome() {
   const total = data.matches.length;
   const nextWeek = pending[0]?.week;
   const upcoming = pending.filter(m => m.week === nextWeek).slice(0, 4);
@@ -180,37 +245,46 @@ const seedTag = ([z, n]) => `${n}°${z}`;
 // Los 4 primeros de cada zona según la tabla de hoy.
 const currentSeeds = () => Object.fromEntries(['A', 'B'].map(z => [z, standings(data.players, data.matches, z).slice(0, 4).map(r => r.name)]));
 
-// Arma el cuadro: quién juega cada cruce y quién lo ganó (sólo si `picks` lo eligió y sigue en ese cruce).
-function resolveBracket(seeds, picks = {}) {
+// Arma el cuadro: quién juega cada cruce y quién lo ganó. Un resultado real (`results`) manda;
+// si no hay, vale lo elegido en `picks`. Cualquiera de los dos cuenta sólo si ese jugador sigue en el cruce.
+function resolveBracket(seeds, picks = {}, results = knockoutResults) {
   const b = {};
   for (const r of PLAYOFF) {
     const players = r.from ? r.from.map(id => b[id].winner) : [r.a, r.b].map(([z, n]) => seeds[z][n - 1]);
     const tags = r.from ? r.from.map(id => `Ganador ${b[id].label}`) : [seedTag(r.a), seedTag(r.b)];
     const label = r.from ? ROUND_NAMES[r.id] : `${tags[0]} vs ${tags[1]}`;
-    b[r.id] = { ...r, players, tags, label, winner: players.every(Boolean) && players.includes(picks[r.id]) ? picks[r.id] : null };
+    const inMatch = name => players.every(Boolean) && players.includes(name);
+    const result = inMatch(results[r.id]?.winner) ? results[r.id] : null;
+    b[r.id] = { ...r, players, tags, label, result, winner: result?.winner ?? (inMatch(picks[r.id]) ? picks[r.id] : null) };
   }
   return b;
 }
 
 // Cuadro en 3 columnas (cuartos, semis, final). `row(match, i)` dibuja cada uno de los dos lados.
 const bracketHtml = (b, row) => `<div class="bracket">${ROUNDS.map(([title, ids]) => `<div class="round"><h4>${title}</h4>
-  <div class="round-body">${ids.map(id => `<article class="bm"><span class="muted bm-title">${ROUND_NAMES[id]}</span>${row(b[id], 0)}${row(b[id], 1)}</article>`).join('')}</div></div>`).join('')}</div>`;
+  <div class="round-body">${ids.map(id => `<article class="bm"><span class="muted bm-title">${ROUND_NAMES[id]}${b[id].result ? ` · ${esc(b[id].result.score ?? '')}` : ''}</span>${row(b[id], 0)}${row(b[id], 1)}</article>`).join('')}</div></div>`).join('')}</div>`;
+
+// Un lado de un cruce: si ya se jugó, ganador resaltado; si no, la chance de ganarlo.
+function bracketRow(m, i) {
+  const [a, c] = m.players;
+  if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
+  const name = m.players[i];
+  const seedLabel = `<span class="seed">${m.tags[i].startsWith('Ganador') ? '' : m.tags[i]}</span>`;
+  if (m.result) return `<div class="bm-row ${m.winner === name ? 'won' : 'lost'}">${seedLabel}<span class="bm-name">${playerLink(name)}</span><strong>${m.winner === name ? '✓' : ''}</strong></div>`;
+  const p = winProb(ratings[a], ratings[c]);
+  return `<div class="bm-row">${seedLabel}<span class="bm-name">${playerLink(name)}</span><strong>${pct(i ? 1 - p : p)}</strong></div>`;
+}
 
 function renderBracket() {
   const b = resolveBracket(currentSeeds());
   const left = pending.length;
-  const row = (m, i) => {
-    const [a, c] = m.players;
-    if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
-    const p = winProb(ratings[a], ratings[c]);
-    return `<div class="bm-row"><span class="seed">${m.tags[i]}</span><span class="bm-name">${playerLink(m.players[i])}</span><strong>${pct(i ? 1 - p : p)}</strong></div>`;
-  };
   const list = data.players.map(p => ({ ...p, ...sim[p.name] })).filter(p => p.qualify > 0.005).sort((a, c) => c.champion - a.champion || c.final - a.final || c.qualify - a.qualify);
   return `<section><h2>Cuadro del playoff</h2>
     <p class="muted">Pasan los 4 primeros de cada zona. Cuartos: 1°A vs 4°B, 2°B vs 3°A, 1°B vs 4°A y 2°A vs 3°B.
     Los ganadores de los dos primeros cruces juegan la Semifinal 1, los otros dos la Semifinal 2, y después la final.</p>
-    ${left ? `<p class="note provisional">Cruces <strong>por ahora</strong>, con la tabla de hoy. Faltan ${left} partidos de zona, así que todavía pueden cambiar.</p>` : ''}
-    ${bracketHtml(b, row)}
+    ${knockoutMode ? '<p class="note provisional">Cruces <strong>confirmados</strong>: ningún partido de zona que falta puede cambiarlos.</p>'
+      : left ? `<p class="note provisional">Cruces <strong>por ahora</strong>, con la tabla de hoy. Faltan ${left} partidos de zona, así que todavía pueden cambiar.</p>` : ''}
+    ${bracketHtml(b, bracketRow)}
     <p class="muted note">El porcentaje es la chance de ganar ese cruce según el ranking. <a href="#simulador">Probá otros resultados en el simulador →</a></p></section>
   <section><h2>Chances por ronda</h2>
     <p class="muted">De ${fmt(SIM_RUNS)} simulaciones del resto de la zona y del playoff.</p>
@@ -237,19 +311,20 @@ function renderSimulator() {
   }).join('');
   const row = (m, i) => {
     const [a, c] = m.players;
-    if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
+    if (!a || !c || m.result) return bracketRow(m, i); // sin rivales todavía, o ya jugado: no se elige
     const p = winProb(ratings[a], ratings[c]);
     const name = m.players[i];
     const state = !m.winner ? '' : m.winner === name ? ' won' : ' lost';
     return `<button type="button" class="bm-row pick${state}" data-pick="${m.id}" data-name="${esc(name)}" aria-pressed="${m.winner === name}">
       <span class="seed">${m.tags[i].startsWith('Ganador') ? '' : m.tags[i]}</span><span class="bm-name">${esc(name)}</span><strong>${pct(i ? 1 - p : p)}</strong></button>`;
   };
-  // Chance según el modelo de que salgan todos los ganadores elegidos.
-  const chosen = PLAYOFF.filter(r => b[r.id].winner);
+  // Chance según el modelo de que salgan todos los ganadores elegidos (los partidos ya jugados no cuentan).
+  const chosen = PLAYOFF.filter(r => b[r.id].winner && !b[r.id].result);
+  const open = PLAYOFF.filter(r => !b[r.id].result).length;
   const path = chosen.reduce((acc, r) => { const m = b[r.id]; return acc * winProb(ratings[m.winner], ratings[m.players.find(n => n !== m.winner)]); }, 1);
   const champ = b.F.winner;
   return `<section><h2>Simulador del playoff</h2>
-    <p class="muted">Arranca con los cruces de hoy. Cambiá quién termina en cada puesto y tocá al ganador de cada partido hasta la final.</p>
+    <p class="muted">Arranca con los cruces de hoy${Object.keys(knockoutResults).length ? ' y los partidos del playoff que ya se jugaron' : ''}. Cambiá quién termina en cada puesto y tocá al ganador de cada partido hasta la final.</p>
     <div class="panel"><h3>Clasificados</h3><div class="two-col">${seedPickers}</div></div>
     <div class="sim-actions">
       <button type="button" class="ghost chip" data-sim="favorites">Completar con favoritos</button>
@@ -257,8 +332,8 @@ function renderSimulator() {
       <button type="button" class="ghost chip" data-sim="reset">Volver a la tabla de hoy</button>
     </div>
     ${bracketHtml(b, row)}
-    ${champ ? `<div class="champion">🏆 <div><span><strong>${esc(champ)}</strong> campeón</span><span class="muted">Chance de que salga todo así según el modelo: ${path < 0.01 ? '<1%' : pct(path)}</span></div></div>`
-      : `<p class="muted note">${chosen.length ? `Elegiste ${chosen.length} de 7 partidos.` : 'El porcentaje es la chance de ganar cada partido según el ranking.'}</p>`}
+    ${champ ? `<div class="champion">🏆 <div><span><strong>${esc(champ)}</strong> campeón</span>${chosen.length ? `<span class="muted">Chance de que salga todo así según el modelo: ${path < 0.01 ? '<1%' : pct(path)}</span>` : ''}</div></div>`
+      : `<p class="muted note">${chosen.length ? `Elegiste ${chosen.length} de ${open} partidos.` : 'El porcentaje es la chance de ganar cada partido según el ranking.'}</p>`}
   </section>`;
 }
 

@@ -183,9 +183,10 @@ details summary { cursor: pointer; color: var(--muted); font-size: .85rem; }
 .provisional { background: var(--surface-2); border-left: 3px solid var(--accent); border-radius: 8px; padding: 8px 12px; }
 button.bm-row { width: 100%; border: 1px solid transparent; color: var(--text); text-align: left; }
 button.bm-row:hover { border-color: var(--accent); }
-button.bm-row.won { background: var(--court); color: #fff; font-weight: 700; }
-button.bm-row.won .seed { color: rgb(255 255 255 / .8); }
-button.bm-row.lost { opacity: .5; text-decoration: line-through; }
+.bm-row.won { background: var(--court); color: #fff; font-weight: 700; }
+.bm-row.won .seed, .bm-row.won .plink { color: #fff; border-color: rgb(255 255 255 / .6); }
+.bm-row.won .seed { color: rgb(255 255 255 / .8); }
+.bm-row.lost { opacity: .5; text-decoration: line-through; }
 .seed-pick { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: center; margin-bottom: 6px; }
 .seed-pick select { min-width: 0; padding: 6px 8px; }
 .sim-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

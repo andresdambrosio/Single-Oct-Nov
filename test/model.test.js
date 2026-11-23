@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFixture, parseStandings, summarize } from '../src/sheet.js';
-import { computeRatings, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
+import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
 test('summarize aplica el reglamento de puntos', () => {
@@ -138,6 +138,36 @@ test('la simulación reparte 100% de probabilidad de campeón', () => {
   assert.ok(Math.abs(sum('qualify') - 8) < 1e-9);
   assert.ok(Math.abs(sum('semi') - 4) < 1e-9);
   assert.ok(Math.abs(sum('final') - 2) < 1e-9);
+});
+
+test('lockedSeeds: sólo confirma los clasificados cuando ningún resultado pendiente los cambia', () => {
+  const five = ['Ana', 'Bea', 'Caro', 'Dani', 'Eva'].map(name => ({ name, zone: 'A' }));
+  const all = [];
+  for (let i = 0; i < five.length; i++) for (let j = i + 1; j < five.length; j++) {
+    all.push(match(`${i}-${j}`, five[i].name, five[j].name, [[6, 0], [6, 0]])); // gana siempre el de adelante
+  }
+  assert.deepEqual(lockedSeeds(five, all, 'A'), ['Ana', 'Bea', 'Caro', 'Dani']);
+  // Si falta Dani–Eva, Eva todavía puede pasarla: no está confirmado.
+  const open = all.map(m => (m.id === '3-4' ? { ...m, sets: [], result: null } : m));
+  assert.equal(lockedSeeds(five, open, 'A'), null);
+  // Si falta Ana–Bea, se puede invertir el 1° y el 2°: tampoco.
+  assert.equal(lockedSeeds(five, all.map(m => (m.id === '0-1' ? { ...m, sets: [], result: null } : m)), 'A'), null);
+});
+
+test('la simulación respeta los resultados del playoff ya jugados', () => {
+  let seed = 3;
+  const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const players = ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4'].map(name => ({ name, zone: name[0] }));
+  const matches = [];
+  for (const z of ['A', 'B']) for (let i = 1; i <= 4; i++) for (let j = i + 1; j <= 4; j++) {
+    matches.push({ ...match(`${z}${i}${j}`, `${z}${i}`, `${z}${j}`, [[6, 2], [6, 2]]), zone: z });
+  }
+  const sim = simulateTournament(players, matches, 2000, rng, { QF1: 'B4', SF1: 'B4', F: 'B4' });
+  assert.equal(sim.A1.semi, 0); // perdió el cuarto con B4
+  assert.equal(sim.B4.champion, 1);
+  // Un ganador que no está en ese cruce se ignora (por ejemplo, si cambiaron los clasificados).
+  const other = simulateTournament(players, matches, 2000, rng, { QF1: 'A2' });
+  assert.ok(other.A1.semi > 0);
 });
 
 test('titleFavorites: a menos de 1 punto son parejos y van ordenados por rating', () => {

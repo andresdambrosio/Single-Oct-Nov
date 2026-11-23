@@ -41,6 +41,14 @@ La fuente es la [planilla del torneo](https://docs.google.com/spreadsheets/d/1hQ
 `npm run sync` baja las hojas *Posiciones* y *Partidos* como CSV y genera `data/tournament.json`.
 La GitHub Action `sync.yml` corre ese mismo comando todas las noches (23:00, hora de Argentina) y commitea si cambió algún resultado.
 
+Cuando los 8 clasificados y sus puestos ya no pueden cambiar, el inicio pasa a modo mata-mata (cuadro, chances de
+salir campeón y clasificados). La planilla todavía no tiene resultados del playoff, así que se cargan a mano en
+`data/playoff.json`, por cruce (`QF1`–`QF4`, `SF1`, `SF2`, `F`), con el marcador desde el ganador:
+
+```json
+{ "results": { "QF1": { "winner": "Juan Pablo Gonzalez", "score": "6-3 6-4" } } }
+```
+
 Fotos y descripciones de los jugadores: `data/profiles.json`. Las fotos van en `assets/players/<id>.jpg`;
 en `photo` se pone esa ruta o una URL.
 

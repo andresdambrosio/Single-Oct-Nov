@@ -213,11 +213,38 @@ export function standings(players, matches, zone, tiebreak = (a, b) => a.name.lo
   });
 }
 
+// Los 4 clasificados de una zona en orden, si ya no pueden cambiar con ningún resultado de los
+// partidos que faltan (se prueban todos, con el desempate final a favor y en contra). Si todavía
+// pueden cambiar, o faltan demasiados partidos para probarlos todos, devuelve null.
+export function lockedSeeds(players, matches, zone, maxPending = 6) {
+  const pending = matches.filter(m => m.zone === zone && !m.result);
+  if (pending.length > maxPending) return null;
+  const played = matches.filter(m => m.result);
+  const OUTCOMES = [[2, 0], [2, 1], [1, 2], [0, 2]];
+  const byName = (a, b) => a.name.localeCompare(b.name);
+  let seeds = null;
+  for (let c = 0; c < 4 ** pending.length; c++) {
+    const all = [...played, ...pending.map((m, i) => {
+      const [w1, w2] = OUTCOMES[Math.floor(c / 4 ** i) % 4];
+      const winner = w1 > w2 ? 1 : 2;
+      return { ...m, result: { winner, setsP1: w1, setsP2: w2, pointsP1: winner === 1 ? 2 : Math.min(w1, 1), pointsP2: winner === 2 ? 2 : Math.min(w2, 1) } };
+    })];
+    for (const tiebreak of [byName, (a, b) => byName(b, a)]) {
+      const top = standings(players, all, zone, tiebreak).slice(0, 4).map(r => r.name).join('|');
+      if (seeds === null) seeds = top;
+      else if (seeds !== top) return null;
+    }
+  }
+  return seeds.split('|');
+}
+
 // Simulación Monte Carlo del resto de la fase de grupos + playoff.
 // En cada corrida se sortea el nivel de cada jugador dentro de su incertidumbre (fitPosterior):
 // así alguien que jugó un solo partido no queda como favorito seguro.
+// `knockout` tiene los ganadores de los partidos del playoff ya jugados ({ QF1: nombre, ... }); se
+// respetan cuando ese jugador está en el cruce.
 // Devuelve, por jugador, probabilidad de clasificar, de llegar a semis y a la final, y de salir campeón.
-export function simulateTournament(players, matches, runs = 4000, rng = Math.random) {
+export function simulateTournament(players, matches, runs = 4000, rng = Math.random, knockout = {}) {
   const out = Object.fromEntries(players.map(p => [p.name, { qualify: 0, semi: 0, final: 0, champion: 0 }]));
   const { mean, sd } = fitPosterior(players, matches);
   const pending = matches.filter(m => !m.result);
@@ -243,7 +270,8 @@ export function simulateTournament(players, matches, runs = 4000, rng = Math.ran
       const [a, b] = round.from
         ? round.from.map(id => winners[id])
         : [seed[round.a[0]][round.a[1] - 1].name, seed[round.b[0]][round.b[1] - 1].name];
-      const w = winners[round.id] = rng() < fastMatch(x[a] - x[b]).p ? a : b;
+      const known = [a, b].includes(knockout[round.id]) ? knockout[round.id] : null;
+      const w = winners[round.id] = known ?? (rng() < fastMatch(x[a] - x[b]).p ? a : b);
       if (round.id.startsWith('QF')) out[w].semi++;
       else if (round.id.startsWith('SF')) out[w].final++;
     }
