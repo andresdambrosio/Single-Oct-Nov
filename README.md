@@ -42,8 +42,10 @@ La fuente es la [planilla del torneo](https://docs.google.com/spreadsheets/d/1hQ
 La GitHub Action `sync.yml` corre ese mismo comando todas las noches (23:00, hora de Argentina) y commitea si cambió algún resultado.
 
 Cuando los 8 clasificados y sus puestos ya no pueden cambiar, el inicio pasa a modo mata-mata (cuadro, chances de
-salir campeón y clasificados). La planilla todavía no tiene resultados del playoff, así que se cargan a mano en
-`data/playoff.json`, por cruce (`QF1`–`QF4`, `SF1`, `SF2`, `F`), con el marcador desde el ganador:
+salir campeón y clasificados). El cuadro del playoff se lee de la hoja *Posiciones*, debajo de las tablas: los cuartos
+como "Jugador vs Jugador" con el marcador en la misma fila, y los que pasan escritos debajo de "Semifinal 1",
+"Semifinal 2" y "FINAL" (los nombres pueden ir abreviados; se reconocen por apellido). Si hace falta corregir o
+completar algo, `data/playoff.json` pisa lo de la planilla, por cruce (`QF1`–`QF4`, `SF1`, `SF2`, `F`):
 
 ```json
 { "results": { "QF1": { "winner": "Juan Pablo Gonzalez", "score": "6-3 6-4" } } }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseFixture, parseStandings, summarize } from '../src/sheet.js';
+import { parseFixture, parsePlayoff, parseStandings, summarize } from '../src/sheet.js';
 import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
@@ -58,6 +58,37 @@ test('parseStandings lee las columnas por nombre aunque la planilla agregue colu
   assert.deepEqual(parseStandings(after).A[0], { name: 'Ana', played: 2, won: 2, lost: 0, setsWon: 4, setsLost: 1, points: 4 });
   const renamed = after.replace('Par Ganados,Par Perdidos', 'P Ganados,P Perdidos');
   assert.deepEqual(parseStandings(renamed).A[0], parseStandings(after).A[0]);
+});
+
+test('parsePlayoff lee el cuadro armado a mano debajo de las posiciones', () => {
+  const names = ['Juan Pablo Gonzalez', 'Fernando Alberti', 'Patricio Poleri', 'Fernando Uriarte', 'Axel Lehmann', 'Ariel Kosakoff', 'Patricio Urdinez', 'Matias Tini'];
+  // Tal cual viene de la planilla: nombres abreviados y el marcador en la fila del cruce.
+  const csv = [
+    'Jugador,Q Partidos,P Ganados,P Perdidos,Sets Ganados,Sets Perdidos,Puntos',
+    'Juan Pablo Gonzalez,6,6,0,12,0,12',
+    ',,,,,,',
+    'Cuartos de Final,,,Semifinal 1,,,',
+    'JP Gonzalez vs Fernando Alberti,,,Pato Poleri,FINAL,,',
+    'Patricio Poleri vs Fernando Uriarte,,6-1; 6-0,,,,',
+    ',,,,,,',
+    ',,,Semifinal 2,,,',
+    'Axel Lehmann vs Ariel Kosakoff,,,,,,',
+    'Patricio Urdinez vs Matias Tini ,,,,,,',
+  ].join('\n');
+  assert.deepEqual(parsePlayoff(csv, names), { QF2: { winner: 'Patricio Poleri', score: '6-1 6-0' } });
+  // Sin cuadro en la hoja, no hay resultados; y parseStandings no se confunde con esas filas.
+  assert.deepEqual(parsePlayoff('Jugador,Puntos\nAna,2\n', names), {});
+  assert.equal(parseStandings(csv).A.length, 1);
+  // Con semis y final completas.
+  const later = csv
+    .replace('Pato Poleri,FINAL,,', 'Pato Poleri,FINAL,Campeón,')
+    .replace('Patricio Poleri vs Fernando Uriarte,,6-1; 6-0,,,,', 'Patricio Poleri vs Fernando Uriarte,,6-1; 6-0,JP Gonzalez,Gonzalez,Gonzalez,')
+    .replace('Axel Lehmann vs Ariel Kosakoff,,,,,,', 'Axel Lehmann vs Ariel Kosakoff,,6-3 6-4,Lehmann,Lehmann,,');
+  const r = parsePlayoff(later, names);
+  assert.equal(r.QF1.winner, 'Juan Pablo Gonzalez');
+  assert.equal(r.QF3.winner, 'Axel Lehmann');
+  assert.equal(r.SF1.winner, 'Juan Pablo Gonzalez');
+  assert.equal(r.F.winner, 'Juan Pablo Gonzalez');
 });
 
 test('el fixture sincronizado es todos-contra-todos en cada zona', () => {

@@ -1,7 +1,7 @@
 // Descarga el Google Sheet del torneo y regenera data/tournament.json.
 // Uso: npm run sync
 import { readFile, writeFile } from 'node:fs/promises';
-import { parseStandings, parseFixture, slug } from '../src/sheet.js';
+import { parsePlayoff, parseStandings, parseFixture, slug } from '../src/sheet.js';
 
 const SHEET_ID = '1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU';
 const GIDS = { standings: 0, fixture: 1534315027 };
@@ -17,12 +17,15 @@ async function fetchCsv(gid) {
   return res.text();
 }
 
-const standings = parseStandings(await fetchCsv(GIDS.standings));
+const standingsCsv = await fetchCsv(GIDS.standings);
+const standings = parseStandings(standingsCsv);
 const players = [
   ...standings.A.map(p => ({ id: slug(p.name), name: p.name, zone: 'A' })),
   ...standings.B.map(p => ({ id: slug(p.name), name: p.name, zone: 'B' })),
 ];
 const matches = parseFixture(await fetchCsv(GIDS.fixture), players.map(p => p.name));
+// El cuadro del playoff está armado a mano debajo de las tablas, en la misma hoja.
+const knockout = parsePlayoff(standingsCsv, players.map(p => p.name));
 
 // Chequeo de cordura: cada zona es un todos-contra-todos.
 for (const zone of ['A', 'B']) {
@@ -47,7 +50,9 @@ const data = {
   withdrawn: WITHDRAWN.filter(w => !players.some(p => p.name === w.name)),
   standings,
   matches,
+  knockout,
 };
 await writeFile(OUT, JSON.stringify(data, null, 2) + '\n');
 const played = matches.filter(m => m.result).length;
-console.log(`✓ ${players.length} jugadores, ${matches.length} partidos (${played} jugados) → data/tournament.json`);
+const knockoutPlayed = Object.keys(knockout).length;
+console.log(`✓ ${players.length} jugadores, ${matches.length} partidos (${played} jugados)${knockoutPlayed ? `, ${knockoutPlayed} del playoff` : ''} → data/tournament.json`);

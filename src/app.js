@@ -6,12 +6,14 @@ const fmt = n => Math.round(n).toLocaleString('es-AR');
 const pct = p => `${Math.round(p * 100)}%`;
 const esc = s => String(s).replace(/[&<>"']/g, c => `&#${c.charCodeAt(0)};`);
 
-const [data, profiles, knockoutResults] = await Promise.all([
+const [data, profiles, manualKnockout] = await Promise.all([
   fetch('data/tournament.json', { cache: 'no-cache' }).then(r => r.json()),
   fetch('data/profiles.json', { cache: 'no-cache' }).then(r => r.json()).then(j => j.players).catch(() => ({})),
-  // Resultados del playoff: { QF1: { winner, score }, ... } con el marcador desde el ganador.
+  // Resultados del playoff cargados a mano: corrigen o completan lo que se lee de la planilla.
   fetch('data/playoff.json', { cache: 'no-cache' }).then(r => r.json()).then(j => j.results ?? {}).catch(() => ({})),
 ]);
+// Resultados del playoff: { QF1: { winner, score }, ... }.
+const knockoutResults = { ...data.knockout, ...manualKnockout };
 const ratings = computeRatings(data.players, data.matches);
 // Semilla fija: las probabilidades no cambian al recargar, sólo cuando entra un resultado.
 let seed = 20261004;
@@ -267,9 +269,10 @@ const bracketHtml = (b, row) => `<div class="bracket">${ROUNDS.map(([title, ids]
 // Un lado de un cruce: si ya se jugó, ganador resaltado; si no, la chance de ganarlo.
 function bracketRow(m, i) {
   const [a, c] = m.players;
-  if (!a || !c) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
   const name = m.players[i];
   const seedLabel = `<span class="seed">${m.tags[i].startsWith('Ganador') ? '' : m.tags[i]}</span>`;
+  if (!name) return `<div class="bm-row"><span class="muted">${m.tags[i]}</span></div>`;
+  if (!a || !c) return `<div class="bm-row">${seedLabel}<span class="bm-name">${playerLink(name)}</span><strong></strong></div>`; // ya pasó, falta su rival
   if (m.result) return `<div class="bm-row ${m.winner === name ? 'won' : 'lost'}">${seedLabel}<span class="bm-name">${playerLink(name)}</span><strong>${m.winner === name ? '✓' : ''}</strong></div>`;
   const p = winProb(ratings[a], ratings[c]);
   return `<div class="bm-row">${seedLabel}<span class="bm-name">${playerLink(name)}</span><strong>${pct(i ? 1 - p : p)}</strong></div>`;

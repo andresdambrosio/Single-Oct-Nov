@@ -133,6 +133,78 @@ function setFinished(a, b, i) {
   return i === 2 ? hi >= 10 && hi - lo >= 2 : (hi === 6 && lo <= 4) || (hi === 7 && lo >= 5);
 }
 
+// Nombres escritos a mano ("JP Gonzalez", "Pato Poleri"): se reconocen por nombre completo o,
+// si no, por apellido cuando hay un solo jugador con ese apellido.
+const plain = s => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim();
+function nameResolver(knownPlayers) {
+  const byFull = new Map(knownPlayers.map(n => [plain(n), n]));
+  const byLast = new Map();
+  for (const n of knownPlayers) {
+    const last = plain(n).split(/\s+/).at(-1);
+    byLast.set(last, byLast.has(last) ? null : n); // null: apellido repetido, no se adivina
+  }
+  return text => {
+    if (!text?.trim()) return null;
+    return byFull.get(plain(text)) ?? byLast.get(plain(text).split(/\s+/).at(-1)) ?? null;
+  };
+}
+
+// "6-1; 6-0" o "6-4 3-6 10-7" → "6-1 6-0". Devuelve null si la celda no es un marcador.
+const SCORE = /^\d+\s*-\s*\d+(\s*[;,/]?\s*\d+\s*-\s*\d+)*$/;
+const normalizeScore = s => (SCORE.test(s?.trim() ?? '') ? s.trim().match(/\d+\s*-\s*\d+/g).map(x => x.replace(/\s/g, '')).join(' ') : null);
+
+// Hoja "Posiciones", debajo de las tablas: el cuadro del playoff armado a mano.
+// - Cuartos: debajo de "Cuartos de Final", una fila por cruce "Jugador vs Jugador", en el orden
+//   del reglamento (1°A-4°B, 2°B-3°A, 1°B-4°A, 2°A-3°B), con el marcador en alguna celda de esa fila.
+// - Los que pasan se escriben debajo de "Semifinal 1", "Semifinal 2" y "FINAL" (y "Campeón", si está).
+// El ganador de cada cruce es el que aparece en la ronda siguiente. Devuelve { QF1: { winner, score }, ... }
+// sólo con los partidos ya definidos.
+export function parsePlayoff(csv, knownPlayers) {
+  const rows = parseCsv(csv);
+  const resolve = nameResolver(knownPlayers);
+  const header = re => {
+    for (let i = 0; i < rows.length; i++) {
+      const j = rows[i].findIndex(c => re.test(c));
+      if (j >= 0) return { row: i, col: j };
+    }
+    return null;
+  };
+  const qf = header(/^cuartos de final/i);
+  if (!qf) return {};
+  const sf1 = header(/^semifinal 1/i), sf2 = header(/^semifinal 2/i), fin = header(/^final$/i), champ = header(/^campe[oó]n/i);
+  // Nombres escritos en una columna entre dos filas (sin incluir el encabezado).
+  const namesIn = (h, untilRow = rows.length) => (h ? rows.slice(h.row + 1, untilRow).map(r => resolve(r[h.col])).filter(Boolean) : []);
+  // Primer marcador en esas filas, entre dos columnas.
+  const scoreIn = (fromRow, toRow, fromCol, toCol = Infinity) => {
+    for (const r of rows.slice(fromRow, toRow)) {
+      for (let j = fromCol + 1; j < Math.min(r.length, toCol); j++) if (normalizeScore(r[j])) return normalizeScore(r[j]);
+    }
+    return null;
+  };
+  const semis = { SF1: namesIn(sf1, sf2?.row), SF2: namesIn(sf2) };
+  const finalists = namesIn(fin);
+  const champion = namesIn(champ)[0] ?? null;
+
+  const results = {};
+  const quarters = [];
+  rows.forEach((r, i) => {
+    if (i <= qf.row || quarters.length === 4) return;
+    const [a, b] = (r[qf.col] ?? '').split(/\s+vs\.?\s+/i).map(resolve);
+    if (a && b) quarters.push({ players: [a, b], row: i });
+  });
+  quarters.forEach((q, k) => {
+    const next = k < 2 ? semis.SF1 : semis.SF2;
+    const winner = q.players.find(n => next.includes(n));
+    if (winner) results[`QF${k + 1}`] = { winner, score: scoreIn(q.row, q.row + 1, qf.col, sf1?.col) };
+  });
+  for (const [id, h, until] of [['SF1', sf1, sf2?.row], ['SF2', sf2, undefined]]) {
+    const winner = semis[id].find(n => finalists.includes(n));
+    if (winner) results[id] = { winner, score: scoreIn(h.row + 1, until ?? rows.length, h.col, fin?.col) };
+  }
+  if (champion && finalists.includes(champion)) results.F = { winner: champion, score: fin ? scoreIn(fin.row + 1, rows.length, fin.col) : null };
+  return results;
+}
+
 // Reglas del playoff según la hoja "Modalidad".
 export const PLAYOFF = [
   { id: 'QF1', a: ['A', 1], b: ['B', 4] },

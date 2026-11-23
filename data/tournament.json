@@ -1,7 +1,7 @@
 {
   "name": "Single Oct-Nov",
   "source": "https://docs.google.com/spreadsheets/d/1hQ_jrAQ1afHX7QEzM3namN13iiXOY62NSU-iyUpsphU",
-  "updatedAt": "2026-11-22T18:34:08.035Z",
+  "updatedAt": "2026-11-23T18:39:21.624Z",
   "players": [
     {
       "id": "juan-pablo-gonzalez",
@@ -1085,5 +1085,11 @@
       },
       "firstSeen": "2026-10-29T16:45:28.271Z"
     }
-  ]
+  ],
+  "knockout": {
+    "QF2": {
+      "winner": "Patricio Poleri",
+      "score": "6-1 6-0"
+    }
+  }
 }
