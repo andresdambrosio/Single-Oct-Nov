@@ -245,6 +245,7 @@ function renderOutlook() {
 
 // ---------- playoff ----------
 const ROUND_NAMES = { QF1: 'Cuartos 1', QF2: 'Cuartos 2', QF3: 'Cuartos 3', QF4: 'Cuartos 4', SF1: 'Semifinal 1', SF2: 'Semifinal 2', F: 'Final' };
+const KO_ROUND_SHORT = { Q: 'Cuartos', S: 'Semis', F: 'Final' };
 const ROUNDS = [['Cuartos', ['QF1', 'QF2', 'QF3', 'QF4']], ['Semis', ['SF1', 'SF2']], ['Final', ['F']]];
 const seedTag = ([z, n]) => `${n}°${z}`;
 // Los 4 primeros de cada zona según la tabla de hoy.
@@ -413,13 +414,15 @@ function renderPlayer(p) {
   const prof = profiles[p.id] ?? {};
   const r = byName[p.name];
   const facts = [['Juega con', prof.plays], ['Revés', prof.backhand]].filter(([, v]) => v);
-  const ms = data.matches.filter(m => m.p1 === p.name || m.p2 === p.name).sort((a, b) => a.week - b.week);
+  // Primero los de zona por semana y después los del playoff ya jugados, en orden de ronda.
+  const ms = [...[...data.matches].sort((a, b) => a.week - b.week), ...knockoutMatches].filter(m => m.p1 === p.name || m.p2 === p.name);
+  const when = m => (m.round ? KO_ROUND_SHORT[m.round[0]] : `Sem. ${m.week}`);
   const line = m => {
     const rival = m.p1 === p.name ? m.p2 : m.p1;
-    if (!m.result) return `<li><span>Sem. ${m.week}</span><span>vs ${playerLink(rival)}</span><span class="muted">${pct(winProb(r.rating, byName[rival].rating))} de ganar</span></li>`;
+    if (!m.result) return `<li><span>${when(m)}</span><span>vs ${playerLink(rival)}</span><span class="muted">${pct(winProb(r.rating, byName[rival].rating))} de ganar</span></li>`;
     const won = (m.result.winner === 1) === (m.p1 === p.name);
     const sets = m.sets.map(([a, b]) => (m.p1 === p.name ? `${a}-${b}` : `${b}-${a}`)).join(' ');
-    return `<li class="${won ? 'w' : 'l'}"><span>Sem. ${m.week}</span><span>vs ${playerLink(rival)}</span><span>${won ? 'G' : 'P'} ${sets}${retTag(m)}</span></li>`;
+    return `<li class="${won ? 'w' : 'l'}"><span>${when(m)}</span><span>vs ${playerLink(rival)}</span><span>${won ? 'G' : 'P'} ${sets}${retTag(m)}</span></li>`;
   };
   return `<a href="#jugadores" class="back">← Todos los jugadores</a>
     <section class="profile">${avatar(p, 'big')}
