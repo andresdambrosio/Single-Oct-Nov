@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { parseFixture, parsePlayoff, parseStandings, summarize } from '../src/sheet.js';
-import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
+import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, playoffMatches, raceProb, scoreProbs, simulateTournament, standings, titleFavorites, winProb } from '../src/model.js';
 import data from '../data/tournament.json' with { type: 'json' };
 
 test('summarize aplica el reglamento de puntos', () => {
@@ -224,4 +224,18 @@ test('sin resultados, todos los de una zona tienen la misma chance de clasificar
     const expected = 4 / data.players.filter(o => o.zone === p.zone).length;
     assert.ok(Math.abs(sim[p.name].qualify - expected) < 0.015, `${p.name}: ${sim[p.name].qualify}`);
   }
+});
+
+test('playoffMatches convierte los cruces jugados en partidos que mueven el ranking', () => {
+  const ko = playoffMatches(data.players, data.matches, { QF2: { winner: 'Patricio Poleri', score: '6-1 6-0' }, SF1: { winner: 'Nadie', score: '6-0 6-0' } });
+  assert.equal(ko.length, 1); // SF1 no cuenta: falta el otro semifinalista y "Nadie" no está en el cruce
+  const [m] = ko;
+  assert.equal(m.p1, 'Patricio Poleri');
+  assert.deepEqual(m.sets, [[6, 1], [6, 0]]);
+  const before = computeRatings(data.players, data.matches);
+  const after = computeRatings(data.players, [...data.matches, ...ko]);
+  assert.ok(after[m.p1] > before[m.p1]);
+  assert.ok(after[m.p2] < before[m.p2]);
+  // Marcador escrito desde el perdedor: se da vuelta.
+  assert.deepEqual(playoffMatches(data.players, data.matches, { QF2: { winner: 'Patricio Poleri', score: '1-6 0-6' } })[0].sets, [[6, 1], [6, 0]]);
 });

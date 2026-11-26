@@ -238,15 +238,41 @@ export function lockedSeeds(players, matches, zone, maxPending = 6) {
   return seeds.split('|');
 }
 
+// Partidos del playoff ya jugados, como partidos comunes para el ranking. `results` es
+// { QF1: { winner, score }, ... }; los rivales salen del cuadro (los 4 primeros de cada zona y los
+// ganadores de cada cruce). Un resultado cuenta sólo si su ganador está en ese cruce. El marcador
+// está escrito desde el ganador ("6-1 6-0"); si no se puede leer (ej. W.O.) cuenta el partido
+// pero sin games, así que no mueve el rating.
+export function playoffMatches(players, matches, results = {}) {
+  const seeds = Object.fromEntries(['A', 'B'].map(z => [z, standings(players, matches, z).slice(0, 4).map(r => r.name)]));
+  const winners = {};
+  const out = [];
+  for (const round of PLAYOFF) {
+    const [a, b] = round.from ? round.from.map(id => winners[id]) : [round.a, round.b].map(([z, n]) => seeds[z][n - 1]);
+    const r = results[round.id];
+    if (!a || !b || !r || ![a, b].includes(r.winner)) continue;
+    winners[round.id] = r.winner;
+    let sets = (r.score ?? '').match(/\d+\s*-\s*\d+/g)?.map(x => x.split('-').map(Number)) ?? [];
+    // Por si el marcador quedó escrito desde el perdedor.
+    if (sets.filter(([x, y]) => x > y).length < sets.filter(([x, y]) => y > x).length) sets = sets.map(([x, y]) => [y, x]);
+    const loser = r.winner === a ? b : a;
+    out.push({ id: `KO-${round.id}`, zone: 'KO', round: round.id, p1: r.winner, p2: loser, sets,
+      result: { winner: 1, setsP1: sets.filter(([x, y]) => x > y).length, setsP2: sets.filter(([x, y]) => y > x).length, pointsP1: 0, pointsP2: 0 } });
+  }
+  return out;
+}
+
 // Simulación Monte Carlo del resto de la fase de grupos + playoff.
 // En cada corrida se sortea el nivel de cada jugador dentro de su incertidumbre (fitPosterior):
 // así alguien que jugó un solo partido no queda como favorito seguro.
 // `knockout` tiene los ganadores de los partidos del playoff ya jugados ({ QF1: nombre, ... }); se
 // respetan cuando ese jugador está en el cruce.
+// `rated` son los partidos con los que se estima el nivel de cada jugador: por defecto los de zona,
+// pero conviene sumar los del playoff ya jugados (playoffMatches).
 // Devuelve, por jugador, probabilidad de clasificar, de llegar a semis y a la final, y de salir campeón.
-export function simulateTournament(players, matches, runs = 4000, rng = Math.random, knockout = {}) {
+export function simulateTournament(players, matches, runs = 4000, rng = Math.random, knockout = {}, rated = matches) {
   const out = Object.fromEntries(players.map(p => [p.name, { qualify: 0, semi: 0, final: 0, champion: 0 }]));
-  const { mean, sd } = fitPosterior(players, matches);
+  const { mean, sd } = fitPosterior(players, rated);
   const pending = matches.filter(m => !m.result);
   const played = matches.filter(m => m.result);
   const gauss = () => Math.sqrt(-2 * Math.log(1 - rng())) * Math.cos(2 * Math.PI * rng());

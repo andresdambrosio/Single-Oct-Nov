@@ -19,7 +19,7 @@ Resultados, tabla y ranking de un torneo amateur de singles.
 ## Modelo de probabilidades
 
 **Ranking (Bradley-Terry sobre games, retroactivo).** Cada jugador tiene una fuerza `x`; la chance de ganar un game
-contra otro es `σ(x_a − x_b)`. Las fuerzas se estiman con *todos* los partidos a la vez (máximo a posteriori), así que
+contra otro es `σ(x_a − x_b)`. Las fuerzas se estiman con *todos* los partidos a la vez (zona y mata-mata ya jugados) (máximo a posteriori), así que
 no importa el orden en que se jugaron y ganarle a alguien que después rinde bien vale más (la idea de PageRank).
 - Se usan los **games** de cada set: un 6-0 6-0 pesa más que un 7-6 7-6. El super tie-break cuenta como un game.
 - **Prior** gaussiano (desvío 0,3) centrado en el promedio: todos arrancan iguales y quien jugó poco se mueve con prudencia.

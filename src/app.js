@@ -1,4 +1,4 @@
-import { computeRatings, lockedSeeds, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
+import { computeRatings, lockedSeeds, playoffMatches, matchFromGameEdge, matchMarkets, ranking, simulateTournament, standings, titleFavorites, winProb } from './model.js';
 import { PLAYOFF } from './sheet.js';
 
 const $ = sel => document.querySelector(sel);
@@ -14,18 +14,21 @@ const [data, profiles, manualKnockout] = await Promise.all([
 ]);
 // Resultados del playoff: { QF1: { winner, score }, ... }.
 const knockoutResults = { ...data.knockout, ...manualKnockout };
-const ratings = computeRatings(data.players, data.matches);
+// El ranking y las probabilidades usan los partidos de zona y también los del playoff ya jugados.
+const knockoutMatches = playoffMatches(data.players, data.matches, knockoutResults);
+const ratedMatches = [...data.matches, ...knockoutMatches];
+const ratings = computeRatings(data.players, ratedMatches);
 // Semilla fija: las probabilidades no cambian al recargar, sólo cuando entra un resultado.
 let seed = 20261004;
 const rng = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 const SIM_RUNS = 20000;
 const knockoutWinners = Object.fromEntries(Object.entries(knockoutResults).map(([id, r]) => [id, r.winner]));
-const sim = simulateTournament(data.players, data.matches, SIM_RUNS, rng, knockoutWinners);
+const sim = simulateTournament(data.players, data.matches, SIM_RUNS, rng, knockoutWinners, ratedMatches);
 // Cuando los 8 clasificados y sus puestos ya no pueden cambiar, el sitio pasa a modo mata-mata.
 const locked = { A: lockedSeeds(data.players, data.matches, 'A'), B: lockedSeeds(data.players, data.matches, 'B') };
 const knockoutMode = Boolean(locked.A && locked.B);
 
-const rank = ranking(data.players, data.matches);
+const rank = ranking(data.players, ratedMatches);
 // Empates comparten posición (ej. todos en 1500 al arrancar).
 rank.forEach(r => { r.position = 1 + rank.filter(o => Math.round(o.rating) > Math.round(r.rating)).length; });
 const byName = Object.fromEntries(rank.map(r => [r.name, r]));
@@ -454,7 +457,7 @@ function renderHelp() {
     </ul></section>
 
   <section id="h-rank"><h2>📊 El ranking</h2>
-    <p>Mide el nivel de cada jugador con <strong>todos los partidos a la vez</strong>, parecido a cómo PageRank ordena páginas:
+    <p>Mide el nivel de cada jugador con <strong>todos los partidos a la vez</strong> (los de zona y los del playoff ya jugados), parecido a cómo PageRank ordena páginas:
     no importa sólo cuántos partidos ganaste, sino <strong>a quién</strong> y <strong>por cuánto</strong>.</p>
     <ul>
       <li>Todos arrancan con <strong>1500</strong>: al principio cualquiera tiene 50% contra cualquiera.</li>
